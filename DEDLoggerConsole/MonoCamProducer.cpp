@@ -6,31 +6,40 @@
 #include "VimbaCPP/Include/VimbaCPPCommon.h"
 #include "VimbaCPP/Include/VimbaCPP.h"
 
-int times_ran = 0;
-bool count_complete;
-std::string camera_name;
+int timesRan = 0;
+bool countCompleted;
+CameraPtr sharedCameraPointer;
+
+std::string cameraName;
 
 using namespace std::chrono_literals;
 using namespace AVT::VmbAPI;
 
+
+
 void MonoCamProducer()
 {
-	count_complete = false;
-	times_ran = 0;
+	countCompleted= false;
+	timesRan = 0;
 }
-void MonoCamProducer::increment_run()
+
+void MonoCamProducer::startupCamera()
 {
-	int dumb_count = 10;
-	while (count_complete == false)
+
+}
+void MonoCamProducer::incrementRun()
+{
+	int dumbCount = 10;
+	while (countCompleted== false)
 	{
-		if (times_ran > dumb_count)
+		if (timesRan > dumbCount)
 		{
-			count_complete = true;
+			countCompleted= true;
 			std::cout << "count completed.";
 			return;
 		}
 		else {
-			times_ran++;
+			timesRan++;
 			std::this_thread::sleep_for(
 					std::chrono::milliseconds(250));
 			std::cout << "Sleeping...\n";

@@ -13,7 +13,7 @@ int main()
     std::cout << "Testing Producer Code\n";
     std::cout << "Launching Test Thread\n";
     std::thread execution_thread([] {
-        TestProducer.increment_run(); 
+        TestProducer.incrementRun(); 
         });
     execution_thread.join();
     std::cout << TestProducer.times_ran << "\n";
