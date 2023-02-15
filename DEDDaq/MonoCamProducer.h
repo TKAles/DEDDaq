@@ -14,12 +14,15 @@ public:
 	MonoCamProducer();
 	void incrementRun();
 	void activateCamera(std::string _cameraID);
+
 	void setFeature(CameraPtr _camera, const char* const& _featureString,
 		float _featureValue);
 	void setFeature(CameraPtr _camera, const char* const& _featureString,
 		const char* const& _featureValue);
+	
 	VmbErrorType startupCamera();
 	VmbErrorType shutdownCamera();
+	
 	void registerCameras();
 
 private:

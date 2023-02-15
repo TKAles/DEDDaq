@@ -2,6 +2,7 @@
 #include <iostream>
 #include <thread>
 #include "MonoCamProducer.h"
+#include "MonoFrameObserver.h"
 #include "VimbaCPP/Include/VimbaSystem.h"
 #include "VimbaCPP/Include/VimbaCPPCommon.h"
 #include "VimbaCPP/Include/VimbaCPP.h"
@@ -24,21 +25,25 @@ std::vector<std::string> foundCameraIDs;
 std::vector<CameraPtr> activeCameras;
 
 
-MonoCamProducer::MonoCamProducer()
-	: monocamSystem (VimbaSystem::GetInstance())
+MonoCamProducer::MonoCamProducer() : monocamSystem (VimbaSystem::GetInstance())
 {
+	// Constructor
 }
 
+// Starts the API up. Any calls will fail if this isn't
+// called before anything else.
 VmbErrorType MonoCamProducer::startupCamera()
 {
 	return monocamSystem.Startup();
 }
-
+// Shuts the API down. 
 VmbErrorType MonoCamProducer::shutdownCamera()
 {
 	return monocamSystem.Shutdown();
 }
-
+// Looks for any connected cameras and grabs the model
+// name and device id. Stores them in the foundCameraNames
+// and foundCameraIDs vectors as strings. 
 void MonoCamProducer::registerCameras()
 {
 	if (VmbErrorSuccess == monocamSystem.GetCameras(foundCameras))
@@ -64,16 +69,18 @@ void MonoCamProducer::registerCameras()
 		std::cout << "Something went wrong while detecting the cameras!";
 	}
 }
-
+// Configures a camera and drops the camera into streaming
+// mode. Designed to be launched in it's own thread.
 void MonoCamProducer::activateCamera(std::string _cameraID)
 {
 	CameraPtr _selectedCamera;
-	FeaturePtr _exposureFeature;
-	FeaturePtr _exposureMode;
 	monocamSystem.OpenCameraByID(_cameraID.c_str(), VmbAccessModeFull, _selectedCamera);
 	setFeature(_selectedCamera, "ExposureMode", "Timed");
 	setFeature(_selectedCamera, "ExposureTime", 5000.0);
 	setFeature(_selectedCamera, "AcquisitionMode", "Continuous");
+	std::cout << "Camera configured.\n";
+	
+
 
 
 }
@@ -101,6 +108,8 @@ void MonoCamProducer::setFeature(CameraPtr _camera, const char* const& _featureS
 	std::cout << "Set feature: " << _featureString << " of camera " << _camid <<
 		" to a value of " << _featureValue << ".\n";
 }
+
+
 
 
 void MonoCamProducer::incrementRun()
