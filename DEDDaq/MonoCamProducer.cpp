@@ -1,8 +1,10 @@
 #include <chrono>
 #include <iostream>
 #include <thread>
+#include <vector>
 #include "MonoCamProducer.h"
 #include "MonoFrameObserver.h"
+#include "CameraThreadInformation.h"
 #include "VimbaCPP/Include/VimbaSystem.h"
 #include "VimbaCPP/Include/VimbaCPPCommon.h"
 #include "VimbaCPP/Include/VimbaCPP.h"
@@ -23,7 +25,8 @@ std::vector<std::string> foundCameraNames;
 std::vector<std::string> foundCameraIDs;
 
 std::vector<CameraPtr> activeCameras;
-
+std::vector<CameraThreadInformation> acquisitionStatus;
+std::vector<MonoFrameObserver> cameraObservers;
 
 MonoCamProducer::MonoCamProducer() : monocamSystem (VimbaSystem::GetInstance())
 {
@@ -60,15 +63,21 @@ void MonoCamProducer::registerCameras()
 				(*iter)->GetID(cameraID);
 				foundCameraNames.push_back(cameraName);
 				foundCameraIDs.push_back(cameraID);
-				MonoCamProducer::activateCamera(cameraID);
 			}
 			std::cout << "Found " << foundCameraIDs.size() << " cameras.\n";
+			acquisitionStatus.clear();
+			std::for_each(foundCameraIDs.begin(), foundCameraIDs.end(),
+				[](std::string _id)
+				{
+					acquisitionStatus.push_back(CameraThreadInformation(_id, false));
+				});
 		}
 
 	} else {
 		std::cout << "Something went wrong while detecting the cameras!";
 	}
 }
+
 // Configures a camera and drops the camera into streaming
 // mode. Designed to be launched in it's own thread.
 void MonoCamProducer::activateCamera(std::string _cameraID)
@@ -81,10 +90,9 @@ void MonoCamProducer::activateCamera(std::string _cameraID)
 	std::cout << "Camera configured.\n";
 	
 
-
-
 }
 
+// This version of setFeature expects a float for the parameter.
 void MonoCamProducer::setFeature(CameraPtr _camera, const char* const& _featureString,
 								 float _featureValue)
 {
@@ -97,6 +105,7 @@ void MonoCamProducer::setFeature(CameraPtr _camera, const char* const& _featureS
 		" to a value of " << _featureValue << ".\n";
 }
 
+// This version of setFeature expects a character array for the parameter.
 void MonoCamProducer::setFeature(CameraPtr _camera, const char* const& _featureString,
 								 const char* const& _featureValue)
 {
@@ -107,27 +116,4 @@ void MonoCamProducer::setFeature(CameraPtr _camera, const char* const& _featureS
 	SP_ACCESS(_camera)->GetID(_camid);
 	std::cout << "Set feature: " << _featureString << " of camera " << _camid <<
 		" to a value of " << _featureValue << ".\n";
-}
-
-
-
-
-void MonoCamProducer::incrementRun()
-{
-	int dumbCount = 10;
-	while (countCompleted== false)
-	{
-		if (timesRan > dumbCount)
-		{
-			countCompleted= true;
-			std::cout << "count completed.";
-			return;
-		}
-		else {
-			timesRan++;
-			std::this_thread::sleep_for(
-					std::chrono::milliseconds(250));
-			std::cout << "Sleeping...\n";
-		}
-	}
 }

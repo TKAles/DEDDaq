@@ -10,9 +10,11 @@ class IRFrameProducer
 public:
 	IRFrameProducer();
 	void initializeImager();
+	void configureTriggering();
 	evo::IRImager associatedImager;
 	evo::IRDeviceParams associatedConfig;
-	
+	evo::IRDevice* associatedDevice;
+
 private:
 	char c_xmlPath[];
 };

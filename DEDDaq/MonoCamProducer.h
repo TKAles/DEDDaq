@@ -26,10 +26,12 @@ public:
 	void registerCameras();
 
 private:
+
 	CameraPtrVector foundCameras;
 	VimbaSystem& monocamSystem;
 	std::vector<std::string> foundCameraNames;
 	std::vector<std::string> foundCameraIDs;
+	std::vector<bool> cameraAcquisitionActive;
 	int times_ran;
 	bool countCompleted;
 	
