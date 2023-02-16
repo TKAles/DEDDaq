@@ -1,4 +1,3 @@
-#include <chrono>
 #include <iostream>
 #include <thread>
 #include <vector>
@@ -9,7 +8,6 @@
 #include "VimbaCPP/Include/VimbaCPPCommon.h"
 #include "VimbaCPP/Include/VimbaCPP.h"
 
-using namespace std::chrono_literals;
 using namespace AVT;
 using namespace AVT::VmbAPI;
 
@@ -25,7 +23,6 @@ std::vector<std::string> foundCameraNames;
 std::vector<std::string> foundCameraIDs;
 
 std::vector<CameraPtr> activeCameras;
-std::vector<CameraThreadInformation> acquisitionStatus;
 std::vector<MonoFrameObserver> cameraObservers;
 
 MonoCamProducer::MonoCamProducer() : monocamSystem (VimbaSystem::GetInstance())
@@ -65,12 +62,6 @@ void MonoCamProducer::registerCameras()
 				foundCameraIDs.push_back(cameraID);
 			}
 			std::cout << "Found " << foundCameraIDs.size() << " cameras.\n";
-			acquisitionStatus.clear();
-			std::for_each(foundCameraIDs.begin(), foundCameraIDs.end(),
-				[](std::string _id)
-				{
-					acquisitionStatus.push_back(CameraThreadInformation(_id, false));
-				});
 		}
 
 	} else {
@@ -87,12 +78,11 @@ void MonoCamProducer::activateCamera(std::string _cameraID)
 	setFeature(_selectedCamera, "ExposureMode", "Timed");
 	setFeature(_selectedCamera, "ExposureTime", 5000.0);
 	setFeature(_selectedCamera, "AcquisitionMode", "Continuous");
-	std::cout << "Camera configured.\n";
-	
 
 }
 
 // This version of setFeature expects a float for the parameter.
+// _featureString is found in Vimba Features Manual
 void MonoCamProducer::setFeature(CameraPtr _camera, const char* const& _featureString,
 								 float _featureValue)
 {
@@ -106,6 +96,7 @@ void MonoCamProducer::setFeature(CameraPtr _camera, const char* const& _featureS
 }
 
 // This version of setFeature expects a character array for the parameter.
+// _featureString is found in Vimba Features Manual
 void MonoCamProducer::setFeature(CameraPtr _camera, const char* const& _featureString,
 								 const char* const& _featureValue)
 {

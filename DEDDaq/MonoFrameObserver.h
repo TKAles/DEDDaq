@@ -18,9 +18,10 @@ public:
 
 void MonoFrameObserver::frameRecieved(const AVT::VmbAPI::FramePtr _inFrame)
 {
-	auto _frameTimestamp = _inFrame->GetTimestamp();
+	VmbUint64_t _timestamp;
+	_inFrame->GetTimestamp(_timestamp);
 	std::cout << "Got frame from " << cameraID << " with timestamp of "
-		<< _frameTimestamp << "ns." << std::endl;
+		<< _timestamp << "ns." << std::endl;
 	IFrameObserver::m_pCamera->QueueFrame(_inFrame);
 }
 

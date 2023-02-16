@@ -4,13 +4,13 @@
 #include <string>
 #include <iostream>
 #include <thread>
+#include <condition_variable>
+#include <mutex>
 #include "MonoCamProducer.h"
-#include "MonoFrameObserver.h"
 #include "IRFrameProducer.h"
 #include "sdk/IRLogger.h"
 
 const int FRAMESTOGRAB = 250;
-std::vector<std::thread> monochromeThreadProducers;
 
 int main()
 {
