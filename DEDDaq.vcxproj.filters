@@ -18,27 +18,9 @@
     <ClCompile Include="DEDLoggerConsole.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MonoCamProducer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="IRFrameProducer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MonoCamProducer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MonoFrameObserver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="IRFrameProducer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CameraThreadInformation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

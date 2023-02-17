@@ -20,14 +20,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DEDLoggerConsole.cpp" />
-    <ClCompile Include="IRFrameProducer.cpp" />
-    <ClCompile Include="MonoCamProducer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CameraThreadInformation.h" />
-    <ClInclude Include="IRFrameProducer.h" />
-    <ClInclude Include="MonoCamProducer.h" />
-    <ClInclude Include="MonoFrameObserver.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
@@ -127,15 +121,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(OPENCV_DIR)\include;D:\repos\ded-logger\irDirectSDK;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OPENCV_HOME)\build\include;$(EVOCORTEX_HOME);$(VIMBA_HOME);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(OPENCV_DIR)\x64\vc16\lib;D:\repos\ded-logger\irDirectSDK\sdk\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opencv_world470d.lib;D:\repos\ded-logger\irDirectSdk\sdk\x64\libirimager.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(EVOCORTEX_HOME)\sdk\x64;$(OPENCV_HOME)\build\x64\vc16\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opencv_world470d.lib;libirimager.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

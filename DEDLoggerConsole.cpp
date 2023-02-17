@@ -6,8 +6,6 @@
 #include <thread>
 #include <condition_variable>
 #include <mutex>
-#include "MonoCamProducer.h"
-#include "IRFrameProducer.h"
 #include "sdk/IRLogger.h"
 
 const int FRAMESTOGRAB = 250;
@@ -21,12 +19,5 @@ int main()
     evo::IRLogger::setVerbosity(
         evo::IRLOG_INFO, 
         evo::IRLOG_OFF, logPath);
-
-    // Initialize the monochrome camera producer object and
-    // its frame grabber
-    MonoCamProducer MonoProducer = MonoCamProducer();
-    MonoProducer.startupCamera();
-    MonoProducer.registerCameras();
-    MonoProducer.shutdownCamera();
     
 }
