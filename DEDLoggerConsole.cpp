@@ -7,8 +7,10 @@
 #include <condition_variable>
 #include <mutex>
 #include "sdk/IRLogger.h"
+#include "VimbaCPP/Include/VimbaCPP.h"
 
-const int FRAMESTOGRAB = 250;
+using namespace AVT::VmbAPI;
+
 
 int main()
 {
