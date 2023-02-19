@@ -8,11 +8,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AVCameraObject.cpp" />
+    <ClCompile Include="AVFrameObserver.cpp" />
     <ClCompile Include="DAQRunner.cpp" />
     <ClCompile Include="DEDLoggerConsole.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AVCameraObject.h" />
+    <ClInclude Include="AVFrameObserver.h" />
     <ClInclude Include="DAQRunner.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>

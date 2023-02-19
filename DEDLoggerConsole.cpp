@@ -9,6 +9,8 @@
 
 using namespace AVT::VmbAPI;
 
+int CAPTURE_POINTS = 200;
+float CAPTURE_FREQUENCY = 80.0;
 
 int main()
 {
@@ -17,6 +19,9 @@ int main()
 	{
 		// Configure Monochrome Systems
 		_experimentCoordinator.configureMonochromeSettings();
+		_experimentCoordinator.setupCapture(CAPTURE_POINTS,
+			CAPTURE_FREQUENCY);
+
 	}
 
 	

@@ -2,6 +2,8 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <thread>
+#include <condition_variable>
 #include "VimbaCPP/Include/VimbaSystem.h"
 #include "AVCameraObject.h"
 
@@ -67,35 +69,26 @@ int DAQRunner::configureMonochromeSettings()
     for (auto camiter = std::begin(DAQRunner::assocAVCameras);
         camiter != std::end(DAQRunner::assocAVCameras); camiter++)
     {
-        _tmpFeature = "ExposureTime";
-        _tmpValue = "5000.0";
+        _tmpFeature = "ExposureMode";
+        _tmpValue = "Timed";
         auto result = camiter->configureFeature(_tmpFeature, 
             _tmpValue, DAQRunner::cameraSystem);
         if (result != 0)
         {
-            std::cout << "Something went wrong setting the Exposure Time!" << std::endl;
+            std::cout << "Something went wrong setting the Exposure Mode!" << std::endl;
             return -1;
         }
-        _tmpFeature = "Gain";
-        _tmpValue = "24.0";
-        result = camiter->configureFeature(_tmpFeature, _tmpValue,
-            DAQRunner::cameraSystem);
-        if (result != 0)
-        {
-            std::cout << "Something went wrong setting the  Amplifier Gain!" << std::endl;
-            return -2;
-        }
+        _tmpFeature = "ExposureTime";
+        float _tmpValueFloat = 5000.0;
+        result = camiter->configureFeature(_tmpFeature,
+            _tmpValueFloat, DAQRunner::cameraSystem);
+            if (result != 0)
+            {
+                std::cout << "Something went wrong setting the Exposure Time" << std::endl;
+            }
     }
     return 0;
 }
-
-int DAQRunner::makeAVC(std::string _camID)
-{
-    std::cout << "makeAVC Stub!" << std::endl;
-    // TODO: Add your implementation code here.
-    return 0;
-}
-
 
 int DAQRunner::setupCapture(int _ptsToCap, float _freqToCap)
 {
