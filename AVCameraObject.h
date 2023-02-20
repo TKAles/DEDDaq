@@ -34,10 +34,9 @@ public:
 	std::mutex streamLockMutex;
 	std::condition_variable endStreamRequest;
 
-	VmbInt64_t payloadSize;
+	int64_t payloadSize;
 	VmbInt64_t imageWidth;
 	VmbInt64_t imageHeight;
-
 
 private:
 	CameraPtr _associatedCamera;

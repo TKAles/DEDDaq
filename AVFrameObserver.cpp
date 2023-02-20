@@ -21,3 +21,8 @@ void AVFrameObserver::FrameReceived(const FramePtr pFrame)
 		_frameID << std::endl;
 	m_pCamera->QueueFrame(pFrame);
 }
+
+AVFrameObserver::~AVFrameObserver()
+{
+	// do something?
+}

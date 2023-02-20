@@ -213,21 +213,31 @@ int AVCameraObject::disconnect()
 int AVCameraObject::startStream(VimbaSystem& _camSys)
 {
     std::unique_lock _sLock(AVCameraObject::streamLockMutex);
-
+    
     if (VmbErrorSuccess != _camSys.GetCameraByID(AVCameraObject::cameraID.c_str(),
         AVCameraObject::_associatedCamera))
     {
         std::cout << "Error getting the camera pointer to start the stream!" << std::endl;
         return -1;
     }
-
-    // If getting the camera pointer was successful, open the camera and drop it 
-    // into streaming mode. Then wait for the lock to get released.
+    
+    // If getting the camera pointer was successful, open the camera and pull out
+    // the payload size, image width and height 
     if (VmbErrorSuccess != AVCameraObject::_associatedCamera->Open(VmbAccessModeFull))
     {
         std::cout << "Error opening camera with full access. Aborting." << std::endl;
         return -2;
     }
-
+    // Get payload size
+    
+    FeaturePtr _tmpFeaturePtr;
+    if (VmbErrorSuccess == AVCameraObject::_associatedCamera->GetFeatureByName("PayloadSize",
+                                                                                _tmpFeaturePtr))
+    {
+        VmbInt64_t _tmpValue;
+        _tmpFeaturePtr->GetValue(_tmpValue);
+        std::cout << "Payload size is: " << _tmpValue << " bytes" << std::endl;
+        AVCameraObject::payloadSize = _tmpValue;
+    }; 
     // Setup stream mode.
 }

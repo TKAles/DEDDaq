@@ -5,7 +5,10 @@
 #include <thread>
 #include <condition_variable>
 #include "VimbaCPP/Include/VimbaSystem.h"
+#include "VimbaCPP/Include/IFrameObserver.h"
 #include "AVCameraObject.h"
+
+using namespace AVT::VmbAPI;
 
 // Constructor 
 DAQRunner::DAQRunner()
@@ -43,9 +46,6 @@ int DAQRunner::startupAVSystem()
                 if (VmbErrorSuccess == (*iter)->GetID(_tmpDeviceID))
                 {
                     DAQRunner::AVCameraIDs.push_back(_tmpDeviceID);
-                    auto _tmpCam = AVCameraObject(_tmpDeviceID);
-                    DAQRunner::assocAVCameras.push_back(_tmpCam);
-                    
                 } else {
                     std::cout << 
                         "Something went wrong grabbing a camera pointer!" << std::endl;
@@ -64,39 +64,91 @@ int DAQRunner::startupAVSystem()
 
 int DAQRunner::configureMonochromeSettings()
 {
-    std::string _tmpFeature;
-    std::string _tmpValue;
-    for (auto camiter = std::begin(DAQRunner::assocAVCameras);
-        camiter != std::end(DAQRunner::assocAVCameras); camiter++)
+    CameraPtr _currentCamera;
+    std::vector<std::string> _configKeywords = {"ExposureMode", "ExposureTime",
+                                "AcquisitionMode"};
+    std::vector<std::string> _configValues = {"Timed", "N/A", "Continuous"};
+
+    std::vector<float> _configValuesFloat = { 0.0, 5000.0, 0.0 };
+    // For each camera, initialize with some default values
+    for (auto sIter = std::begin(DAQRunner::AVCameraIDs); sIter != std::end(DAQRunner::AVCameraIDs);
+        sIter++)
     {
-        _tmpFeature = "ExposureMode";
-        _tmpValue = "Timed";
-        auto result = camiter->configureFeature(_tmpFeature, 
-            _tmpValue, DAQRunner::cameraSystem);
-        if (result != 0)
+        if (VmbErrorSuccess == DAQRunner::cameraSystem.GetCameraByID((*sIter).c_str(),
+            _currentCamera))
         {
-            std::cout << "Something went wrong setting the Exposure Mode!" << std::endl;
+            std::cout << "Sucessfully got pointer to device id " << (*sIter) << std::endl;
+            // Try to open the camera
+            if (VmbErrorSuccess != _currentCamera->Open(VmbAccessModeFull))
+            {
+                std::cout << "Something went wrong trying to open the camera " <<
+                    "instance for device ID " << (*sIter) << "." << std::endl;
+                return -2;
+            }
+            // If successful, apply the _configKeywords and _configValues vectors
+            // to each camera.
+            FeaturePtr _tmpFeat;
+
+                for (auto cfgidx = 0; cfgidx < _configKeywords.size(); cfgidx++)
+            {
+                std::cout << "Setting feature " << _configKeywords[cfgidx] <<
+                    " with value " << _configValues[cfgidx] << " on device ID: "
+                    << (*sIter) << std::endl;
+                if (VmbErrorSuccess != _currentCamera->GetFeatureByName(
+                    _configKeywords[cfgidx].c_str(), _tmpFeat))
+                {
+                    std::cout << "Something went wrong trying to get feature " << _configKeywords[cfgidx]
+                        << " on device id " << (*sIter) << "." << std::endl;
+                    return -3;
+                }
+                if (_configValues[cfgidx] == std::string("N/A"))
+                {
+                    // This means that the float vector should be used because
+                    // I am dumb and don't really know a good way to implement the 
+                    // multitype vector.
+                    if (VmbErrorSuccess != _tmpFeat->SetValue(_configValuesFloat[cfgidx]))
+                    {
+                        std::cout << "Something went wrong writing the feature (float) to the camera!" << std::endl;
+                        return -4;
+                    }
+                }
+                else {
+                    // Set the feature to the new value
+                    if (VmbErrorSuccess != _tmpFeat->SetValue(_configValues[cfgidx].c_str()))
+                    {
+                        std::cout << "Something went wrong writing the feature (std::string) to the camera!" << std::endl;
+                        return -4;
+                    }
+                }
+            }
+            if (VmbErrorSuccess != _currentCamera->Close())
+            {
+                std::cout << "Problem closing camera cleanly after configuration." << std::endl;
+                return -5;
+            }
+        }
+        else {
+            std::cout << "Problem during connection attempt to " <<
+                (*sIter) << "." << std::endl;
             return -1;
         }
-        _tmpFeature = "ExposureTime";
-        float _tmpValueFloat = 5000.0;
-        result = camiter->configureFeature(_tmpFeature,
-            _tmpValueFloat, DAQRunner::cameraSystem);
-            if (result != 0)
-            {
-                std::cout << "Something went wrong setting the Exposure Time" << std::endl;
-            }
     }
-    return 0;
 }
 
 int DAQRunner::setupCapture(int _ptsToCap, float _freqToCap)
 {
-    std::cout << "setupCapture Stub!" << std::endl;
-    // TODO: Add your implementation code here.
+    // Clear the buffers out
+    framebuf1.clear();
+    framebuf2.clear();
+
     return 0;
 }
 
+int DAQRunner::startStreaming(std::string _camID)
+{
+    // Connect to the cameraa 
+    return 0;
+}
 int DAQRunner::shutdownAVSystem()
 {
     DAQRunner::cameraSystem.Shutdown();
