@@ -137,15 +137,32 @@ int DAQRunner::configureMonochromeSettings()
 
 int DAQRunner::setupCapture(int _ptsToCap, float _freqToCap)
 {
-    // Clear the buffers out
-    framebuf1.clear();
-    framebuf2.clear();
-
+    // put trigger configuration and such here.
     return 0;
 }
 
 int DAQRunner::startStreaming(std::string _camID)
 {
+    // unique_lock is so we can use a condition variable to 
+    // wait for a signal to stop streaming
+    std::unique_lock<std::mutex> _streamWorkerLock(DAQRunner::stopStreamingMutex);
+    CameraPtr _monoCam;
+
+    if (VmbErrorSuccess != DAQRunner::cameraSystem.GetCameraByID(_camID.c_str(), _monoCam))
+    {
+        std::cout << "Something went wrong starting the streaming interface" << std::endl;
+        return -1;
+    }
+    // initialize the frameptrvector for the framebuffer with 25 frames.
+    DAQRunner::_frameBuffer1.reserve(25);
+
+    // lambda needs local scope to 'see' the _killStream variable
+    // so pass everything in by reference `[&]`
+    DAQRunner::stopStreamingCV.wait(_streamWorkerLock,
+                                [&] {
+                                        return DAQRunner::_killStream == true;
+                                    });
+
     // Connect to the cameraa 
     return 0;
 }

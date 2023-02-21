@@ -11,7 +11,7 @@ public:
 	AVFrameObserver(CameraPtr pCamera);
 	void FrameReceived(const FramePtr pFrame);
 	~AVFrameObserver();
-
+	int framesSeen;
 
 };
 
