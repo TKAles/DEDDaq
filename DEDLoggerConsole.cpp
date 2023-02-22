@@ -29,8 +29,10 @@ int main()
 			_experimentCoordinator.startStreaming(
 				_experimentCoordinator.AVCameraIDs[0])); 
 		std::cout << "Launched Worker Thread!" << std::endl;
-		std::this_thread::sleep_for(
-			2*std::chrono_literals::s)
+		std::cout << "Sleeping for 5s." << std::endl;
+		std::this_thread::sleep_for(std::chrono::seconds(5));
+		// Try to trip the condition variable.
+		_experimentCoordinator.stopStreamingMutex
 	}
 
 	
