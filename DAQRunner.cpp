@@ -65,6 +65,7 @@ int DAQRunner::startupAVSystem()
 int DAQRunner::configureMonochromeSettings()
 {
     CameraPtr _currentCamera;
+    // ugh, this really should be a struct. but...effort
     std::vector<std::string> _configKeywords = {"ExposureMode", "ExposureTime",
                                 "AcquisitionMode"};
     std::vector<std::string> _configValues = {"Timed", "N/A", "Continuous"};
