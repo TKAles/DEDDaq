@@ -141,13 +141,18 @@ int DAQRunner::setupCapture(int _ptsToCap, float _freqToCap)
     return 0;
 }
 
+// startStreaming should be ran as it's own thread. Trip over the stopStreamingCV
+// condition variable to end the acquisition thread for each instance that is
+// created. This is only for the monochrome subsystem and most likely will get
+// renamed in the near future.
 int DAQRunner::startStreaming(std::string _camID)
 {
     // unique_lock is so we can use a condition variable to 
     // wait for a signal to stop streaming
     std::unique_lock<std::mutex> _streamWorkerLock(DAQRunner::stopStreamingMutex);
     CameraPtr _monoCam;
-
+    FeaturePtr _monoFeatures;
+    // Get the camera
     if (VmbErrorSuccess != DAQRunner::cameraSystem.GetCameraByID(_camID.c_str(), _monoCam))
     {
         std::cout << "Something went wrong starting the streaming interface" << std::endl;
@@ -163,7 +168,41 @@ int DAQRunner::startStreaming(std::string _camID)
                                         return DAQRunner::_killStream == true;
                                     });
 
-    // Connect to the cameraa 
+    // acquire ze payload value
+    if (VmbErrorSuccess != _monoCam->GetFeatureByName("payloadSize", _monoFeatures))
+    {
+        std::cout << "Something went wrong trying to get the payload size of the stream!"
+            << std::endl;
+        return -2;
+    }
+    // do some wierd registration voodoo I don't understand and am directly
+    // ripping from the C++ API examples. This can't end badly at all....
+    // Get an iterator and initialize each entry in the frameptrvector with a blank frame
+    for (FramePtrVector::iterator pIter = DAQRunner::_frameBuffer1.begin();
+        pIter != DAQRunner::_frameBuffer1.end(); pIter++)
+    {
+        // Clean? the vector and construct new frames using the _payloadSize
+        (*pIter).reset(new Frame(DAQRunner::_payloadSize));
+        // Register the modified observer as a pointer? for each frame?
+        (*pIter)->RegisterObserver(IFrameObserverPtr(new AVFrameObserver(_monoCam)));
+        // Announce that the frames are available to the API
+        _monoCam->AnnounceFrame(*pIter);
+        // Start the capture engine and queue the frames
+        _monoCam->StartCapture();
+        for (FramePtrVector::iterator fPtrIter = DAQRunner::_frameBuffer1.begin();
+            fPtrIter != DAQRunner::_frameBuffer1.end(); fPtrIter++)
+        {
+            _monoCam->QueueFrame(*fPtrIter);
+        }
+        // Start acquiring frames.
+        _monoCam->GetFeatureByName("AcquisitionStart", _monoFeatures);
+        _monoFeatures->RunCommand();
+        // Wait for the lock to clear before stopping the acqusition engine.
+        DAQRunner::stopStreamingCV.wait(_streamWorkerLock);
+        // Stop frame acquistion
+        _monoCam->GetFeatureByName("AcquisitionStop", _monoFeatures);
+        _monoFeatures->RunCommand();
+    }
     return 0;
 }
 int DAQRunner::shutdownAVSystem()

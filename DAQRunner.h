@@ -24,14 +24,11 @@ public:
 	int setupCapture(int _ptsToCap, float _freqToCap);
 	int startStreaming(std::string _camID);
 	int shutdownAVSystem();
-	AVFrameObserver& first_observer;
 	std::mutex stopStreamingMutex;
 	std::condition_variable stopStreamingCV;
-	bool _killStream;
 
 private:
-	std::vector<Frame> framebuf1;
-	std::vector<Frame> framebuf2;
+	bool _killStream;
 	VmbInt64_t _payloadSize;
 	FramePtrVector _frameBuffer1;
 };
