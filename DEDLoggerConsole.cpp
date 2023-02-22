@@ -3,6 +3,9 @@
 
 #include <string>
 #include <iostream>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 #include "VimbaCPP/Include/VimbaCPP.h"
 #include "VimbaCPP/Include/VimbaSystem.h"
 #include "DAQRunner.h"
@@ -19,9 +22,15 @@ int main()
 	{
 		// Configure Monochrome Systems
 		_experimentCoordinator.configureMonochromeSettings();
-		_experimentCoordinator.setupCapture(CAPTURE_POINTS,
-			CAPTURE_FREQUENCY);
-
+		
+		// Camera thread worker setup/teardown/signaling
+		// test.
+		std::thread _monoOneThread(
+			_experimentCoordinator.startStreaming(
+				_experimentCoordinator.AVCameraIDs[0])); 
+		std::cout << "Launched Worker Thread!" << std::endl;
+		std::this_thread::sleep_for(
+			2*std::chrono_literals::s)
 	}
 
 	
