@@ -8,6 +8,7 @@
 #include "VimbaCPP/Include/Camera.h"
 #include "VimbaCPP/Include/Feature.h"
 #include "VimbaCPP/Include/SharedPointerDefines.h"
+#include "AVCameraConfiguration.h"
 
 using namespace AVT;
 using namespace AVT::VmbAPI;
@@ -126,11 +127,15 @@ int AVMonoCamera::changeFeature(std::string fName, int fValue)
     return 0;
 }
 
-void AVMonoCamera::streamWorker(std::mutex& _lockMutex)
+int AVMonoCamera::applyFeatureChange()
 {
-    AVMonoCamera::isStreaming = false;
+
+}
+void AVMonoCamera::streamWorker()
+{
+    AVMonoCamera::isStreaming = true;
     std::cout << "Worker started and waiting on streamLock!" << std::endl;
-    std::unique_lock streamLock(_lockMutex);
+    std::unique_lock streamLock(AVMonoCamera::streamMutex);
     std::cout << "Worker created unique_lock!" << std::endl;
     AVMonoCamera::streamStopCV.wait(streamLock, [&] { return AVMonoCamera::isStreaming == false; });
     std::cout << "Request to configure recieved...configuring" << std::endl;

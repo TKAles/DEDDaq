@@ -4,6 +4,7 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
+#include <chrono>
 // Vimba (Allied Vision) Libraries
 #include "VimbaCPP/Include/VimbaCPP.h"
 // Internal Libraries
@@ -57,16 +58,20 @@ int searchForCameras(VimbaSystem& cameraSystem, std::vector<std::string>& _outVa
 void main()
 {
 	std::vector<std::string> foundCameras;
-	std::mutex STREAM_LOCK_MUTEX;
+	
 	// startup the transport layer
 	AVCameraSystem.Startup();
 	searchForCameras(AVCameraSystem, foundCameras);
 	std::cout << "Using ID " << foundCameras[0] << " as TestCamera!" << std::endl;
 	AVMonoCamera TestCamera = AVMonoCamera(foundCameras[0], AVCameraSystem);
-	std::thread TestWorkerThread([&] { TestCamera.streamWorker(STREAM_LOCK_MUTEX);  });
-	std::cout << "Thread launched" << std::endl;
-	TestCamera.isStreaming = true;
+	
+	std::thread TestWorkerThread([&] { TestCamera.streamWorker();  });
+	std::cout << "Thread launched. Main thread sleeping." << std::endl;
+	std::this_thread::sleep_for(std::chrono::seconds(10));
+	std::cout << "Finished Sleeping" << std::endl;
+	TestCamera.isStreaming = false;
 	TestCamera.streamStopCV.notify_all();
+	std::cout << "Attempted to set condition variable, waiting for thread to join" << std::endl;
 	TestWorkerThread.join();
 	AVCameraSystem.Shutdown();
 	return;

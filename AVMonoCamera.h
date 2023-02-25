@@ -1,6 +1,7 @@
 #pragma once
 #include "VimbaCPP/Include/Camera.h"
 #include "VimbaCPP/Include/VimbaCPP.h"
+#include "AVCameraConfiguration.h"
 #include <mutex>
 #include <condition_variable>
 using namespace AVT::VmbAPI;
@@ -23,11 +24,14 @@ public:
 	int changeFeature(std::string fName, double fValue);
 	int changeFeature(std::string fName, bool fValue);
 	int changeFeature(std::string fName, int fValue);
+	
+	int applyFeatureChange();
 
 	AVMonoCamera();
 	AVMonoCamera(std::string _camID, VimbaSystem& _cSys);
 
-	void streamWorker(std::mutex& _lockMutex);
+	void streamWorker();
 
+	AVCameraConfiguration associatedConfig;
 };
 
