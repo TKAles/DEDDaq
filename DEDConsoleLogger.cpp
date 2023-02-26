@@ -64,11 +64,12 @@ void main()
 	searchForCameras(AVCameraSystem, foundCameras);
 	std::cout << "Using ID " << foundCameras[0] << " as TestCamera!" << std::endl;
 	AVMonoCamera TestCamera = AVMonoCamera(foundCameras[0], AVCameraSystem);
-	
+	// setup worker thread using the streamWorker function
 	std::thread TestWorkerThread([&] { TestCamera.streamWorker();  });
 	std::cout << "Thread launched. Main thread sleeping." << std::endl;
-	std::this_thread::sleep_for(std::chrono::seconds(10));
+	std::this_thread::sleep_for(std::chrono::seconds(1));
 	std::cout << "Finished Sleeping" << std::endl;
+	// Stop streaming
 	TestCamera.isStreaming = false;
 	TestCamera.streamStopCV.notify_all();
 	std::cout << "Attempted to set condition variable, waiting for thread to join" << std::endl;

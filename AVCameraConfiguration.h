@@ -33,7 +33,7 @@ class AVCameraConfiguration
 			featureValue.push_back((std::string)"Timed");
 			featureValue.push_back((double)5000.0);
 			featureValue.push_back((std::string)"RisingEdge");
-			featureValue.push_back((bool)false);
+			featureValue.push_back((std::string)"Off");
 			featureValue.push_back((std::string)"ExposureStart");
 			featureValue.push_back((std::string)"Line0");
 			featureValue.push_back((double)24.0);

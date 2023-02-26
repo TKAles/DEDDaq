@@ -3,6 +3,7 @@
 #include <string>
 #include <mutex>
 #include <condition_variable>
+#include <vector>
 #include "VimbaCPP/Include/VimbaCPP.h"
 #include "VimbaCPP/Include/VimbaSystem.h"
 #include "VimbaCPP/Include/Camera.h"
@@ -129,15 +130,110 @@ int AVMonoCamera::changeFeature(std::string fName, int fValue)
 
 int AVMonoCamera::applyFeatureChange()
 {
+    if (VmbErrorSuccess != AVMonoCamera::monoCameraPtr->Open(VmbAccessModeFull))
+    {
+        std::cout << "Something went wrong opening the camera!" << std::endl;
+        return -1;
+    }
 
+    int idx = 0;
+    // Apply each feature, use the idx variable to correlate the featureName
+    // with the featureValue.
+    for (auto featIter = AVMonoCamera::associatedConfig.featureName.begin();
+        featIter != AVMonoCamera::associatedConfig.featureName.end(); featIter++)
+    {
+        std::cout << "Attempting to apply FeatureName: " << featIter->c_str() << "\tFeatureValue: ";
+        auto retcode = AVMonoCamera::monoCameraPtr->GetFeatureByName(
+            featIter->c_str(), AVMonoCamera::cameraFeaturePtr);
+        // If getting the feature is successful, determine the associated value type and
+        // retrieve + apply it to the camera.
+        if (retcode == VmbErrorSuccess)
+        {
+            if (std::holds_alternative<std::string>(AVMonoCamera::associatedConfig.featureValue[idx]))
+            {
+                auto fVal = std::get<std::string>(AVMonoCamera::associatedConfig.featureValue[idx]).c_str();
+                std::cout << fVal << "." << std::endl;
+                // Try applying the feature. Return -2 on feature application failure.
+                // Copy/Pasted below.
+                if (VmbErrorSuccess != AVMonoCamera::cameraFeaturePtr->SetValue(fVal))
+                {
+                    std::cout << std::endl << "Setting the feature didn't work!" << std::endl;
+                    return -2;
+                }
+            }
+            else if (std::holds_alternative<double>(AVMonoCamera::associatedConfig.featureValue[idx]))
+            {
+                auto fVal = std::get<double>(AVMonoCamera::associatedConfig.featureValue[idx]);
+                std::cout << fVal << "." << std::endl;
+                if (VmbErrorSuccess != AVMonoCamera::cameraFeaturePtr->SetValue(fVal))
+                {
+                    std::cout << std::endl << "Setting the feature didn't work!" << std::endl;
+                    return -2;
+                }
+            }
+            else if (std::holds_alternative<bool>(AVMonoCamera::associatedConfig.featureValue[idx]))
+            {
+                auto fVal = std::get<bool>(AVMonoCamera::associatedConfig.featureValue[idx]);
+                std::cout << fVal << "." << std::endl;
+                if (VmbErrorSuccess != AVMonoCamera::cameraFeaturePtr->SetValue(fVal))
+                {
+                    std::cout << std::endl << "Setting the feature didn't work!" << std::endl;
+                    return -2;
+                }
+            }
+
+            idx++;
+        }
+    }
+    // return zero on successfully applying the struct
+    return 0;
 }
 void AVMonoCamera::streamWorker()
 {
+    // Set the streaming flag to true. Acquire the streaming lock.
     AVMonoCamera::isStreaming = true;
-    std::cout << "Worker started and waiting on streamLock!" << std::endl;
     std::unique_lock streamLock(AVMonoCamera::streamMutex);
-    std::cout << "Worker created unique_lock!" << std::endl;
-    AVMonoCamera::streamStopCV.wait(streamLock, [&] { return AVMonoCamera::isStreaming == false; });
+    // Open the camera with full access, configure it and enter streaming mode 
+    // until requested to stop. Need to pass in the class via reference so it 
+    // can see the isStreaming flag.
+    if (VmbErrorSuccess != AVMonoCamera::monoCameraPtr->Open(VmbAccessModeFull))
+    {
+        std::cout << "Something went wrong getting camera access for the stream worker!" << std::endl;
+    }
+    // Configure the camera for the experiment. Modify the associated struct
+    // if the defaults don't work for your particular application.
+    AVMonoCamera::applyFeatureChange();
+    std::cout << "streamWorker configured " << AVMonoCamera::cameraID <<
+        " successfully." << std::endl;
+    // Get the payload size.
+    AVMonoCamera::monoCameraPtr->GetFeatureByName("PayloadSize",
+        AVMonoCamera::cameraFeaturePtr);
+    AVMonoCamera::cameraFeaturePtr->GetValue(AVMonoCamera::cameraPayloadSize);
+    // Allocate memory for the frames
+    std::cout << "WORKER: Allocating memory for frames." << std::endl;
+    for (FramePtrVector::iterator fIter = AVMonoCamera::cameraFrameBufferVector.begin();
+        fIter != AVMonoCamera::cameraFrameBufferVector.end(); fIter++)
+    {
+        (*fIter).reset(new Frame(AVMonoCamera::cameraPayloadSize));
+        (*fIter)->RegisterObserver(IFrameObserverPtr(
+            new AVFrameObserver(AVMonoCamera::monoCameraPtr)));
+        AVMonoCamera::monoCameraPtr->AnnounceFrame(*fIter);
+    }
+    // Start capture engine and put the allocated frames 
+    // into the queue.
+    std::cout << "WORKER: Starting Vimba API and announcing allocated frames." << std::endl;
+    AVMonoCamera::monoCameraPtr->StartCapture();
+    for (FramePtrVector::iterator fIter = AVMonoCamera::cameraFrameBufferVector.begin();
+        fIter != AVMonoCamera::cameraFrameBufferVector.end(); fIter++)
+    {
+        AVMonoCamera::monoCameraPtr->QueueFrame(*fIter);
+    }
+    AVMonoCamera::monoCameraPtr->GetFeatureByName("AcquisitionStart",
+        AVMonoCamera::cameraFeaturePtr);
+    AVMonoCamera::cameraFeaturePtr->RunCommand();
+    std::cout << "WORKER: AcquisitionStart command sent, waiting for quit flag." << std::endl;
+    AVMonoCamera::streamStopCV.wait(streamLock, [&] 
+    { return AVMonoCamera::isStreaming == false; });
     std::cout << "Request to configure recieved...configuring" << std::endl;
     
     return;

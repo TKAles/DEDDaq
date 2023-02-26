@@ -7,10 +7,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AVFrameObserver.cpp" />
     <ClCompile Include="AVMonoCamera.cpp" />
     <ClCompile Include="DEDConsoleLogger.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AVFrameObserver.h" />
     <ClInclude Include="AVMonoCamera.h" />
     <ClInclude Include="AVCameraConfiguration.h" />
   </ItemGroup>

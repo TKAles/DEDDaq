@@ -21,12 +21,18 @@
     <ClCompile Include="AVMonoCamera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AVFrameObserver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AVMonoCamera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AVCameraConfiguration.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AVFrameObserver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
