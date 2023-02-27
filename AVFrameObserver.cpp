@@ -4,13 +4,9 @@
 #include "VimbaCPP/Include/IFrameObserver.h"
 #include <iostream>
 
-// Constructor. Pass CameraPtr to function of the camera that
-// you want this observer to react to
-AVFrameObserver::AVFrameObserver(CameraPtr pCamera) : IFrameObserver(pCamera)
-{
-	// Constructor
-}
-
+// Constructor is defined in the header file.
+using namespace AVT;
+using namespace AVT::VmbAPI;
 // FrameRecieved. Callback function run whenever the associated 
 // camera sends a new frame. Needs to re-queue the frame back to
 // the camera once copying is completed.
@@ -21,10 +17,15 @@ void AVFrameObserver::FrameReceived(const FramePtr pFrame)
 	VmbFrameStatusType incomingStatus;
 	if (VmbErrorSuccess == pFrame->GetReceiveStatus(incomingStatus))
 	{
+		VmbUint64_t _frameTStamp;
+
 		if (VmbFrameStatusComplete == incomingStatus)
 		{
-			// Data is good. 
-			std::cout << "Got Frame!" << std::endl;
+			// Data is good. Create a lock and place the frame into the 
+			// processing/output queue.
+			std::unique_lock _queueLock(AVFrameObserver::queueMutex);
+			AVFrameObserver::frameTransferQueue.push(pFrame);
+
 		}
 		else {
 			// Data is bad.
@@ -32,9 +33,18 @@ void AVFrameObserver::FrameReceived(const FramePtr pFrame)
 		}
 	}
 	else {
+		// Another bad scenario.
 		std::cout << "Couldn't get the frame status!" << std::endl;
 	}
 	// Return the frame back to the queue using
 	// the underlying mechanism provided by IFrameObserver
 	m_pCamera->QueueFrame(pFrame);
+}
+
+void AVFrameObserver::GetFrame(FramePtr &_outFrame)
+{
+	// Lock the mutex and pop the frame off the top.
+	std::unique_lock _queueLock(AVFrameObserver::queueMutex);
+	AVFrameObserver::frameTransferQueue.front();
+	
 }

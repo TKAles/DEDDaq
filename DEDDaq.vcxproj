@@ -42,7 +42,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(EVOCORTEX_HOME)\sdk;$(VIMBA_HOME);$(OPENCV_HOME)\build\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files %28x86%29\National Instruments\Shared\ExternalCompilerSupport\C\include;$(EVOCORTEX_HOME)\sdk;$(VIMBA_HOME);$(OPENCV_HOME)\build\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
     </ClCompile>
@@ -50,7 +50,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(VIMBA_HOME)\VimbaCPP\Lib\Win64;$(OPENCV_HOME)\build\x64\vc16\lib;$(EVOCORTEX_HOME)\sdk\x64</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(VIMBA_HOME)\VimbaCPP\Lib\Win64\VimbaCPP.lib;$(OPENCV_HOME)\build\x64\vc16\lib\opencv_world470d.lib;$(EVOCORTEX_HOME)\sdk\x64\libirimagerd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>C:\Program Files (x86)\National Instruments\Shared\ExternalCompilerSupport\C\lib64\msvc\NIDAQmx.lib;C:\Program Files (x86)\National Instruments\Shared\ExternalCompilerSupport\C\lib64\msvc\nisyscfg.lib;$(VIMBA_HOME)\VimbaCPP\Lib\Win64\VimbaCPP.lib;$(OPENCV_HOME)\build\x64\vc16\lib\opencv_world470d.lib;$(EVOCORTEX_HOME)\sdk\x64\libirimagerd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

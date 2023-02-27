@@ -130,12 +130,7 @@ int AVMonoCamera::changeFeature(std::string fName, int fValue)
 
 int AVMonoCamera::applyFeatureChange()
 {
-    if (VmbErrorSuccess != AVMonoCamera::monoCameraPtr->Open(VmbAccessModeFull))
-    {
-        std::cout << "Something went wrong opening the camera!" << std::endl;
-        return -1;
-    }
-
+    
     int idx = 0;
     // Apply each feature, use the idx variable to correlate the featureName
     // with the featureValue.
@@ -232,9 +227,24 @@ void AVMonoCamera::streamWorker()
         AVMonoCamera::cameraFeaturePtr);
     AVMonoCamera::cameraFeaturePtr->RunCommand();
     std::cout << "WORKER: AcquisitionStart command sent, waiting for quit flag." << std::endl;
+   
+    // Wait for the condition variable to get triggered.
     AVMonoCamera::streamStopCV.wait(streamLock, [&] 
     { return AVMonoCamera::isStreaming == false; });
-    std::cout << "Request to configure recieved...configuring" << std::endl;
-    
+
+    std::cout << "Request to shutdown stream recieved." << std::endl;
+    // Tear down the API and release the memory used for the frames
+    AVMonoCamera::monoCameraPtr->GetFeatureByName("AcquisitionStop",
+        AVMonoCamera::cameraFeaturePtr);
+    AVMonoCamera::cameraFeaturePtr->RunCommand();
+    AVMonoCamera::monoCameraPtr->EndCapture();
+    AVMonoCamera::monoCameraPtr->FlushQueue();
+    AVMonoCamera::monoCameraPtr->RevokeAllFrames();
+    for (FramePtrVector::iterator fIter = AVMonoCamera::cameraFrameBufferVector.begin();
+        fIter != AVMonoCamera::cameraFrameBufferVector.end(); fIter++)
+    {
+        (*fIter)->UnregisterObserver();
+    }
+    AVMonoCamera::monoCameraPtr->Close();
     return;
 }

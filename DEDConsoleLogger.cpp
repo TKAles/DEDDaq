@@ -9,6 +9,8 @@
 #include "VimbaCPP/Include/VimbaCPP.h"
 // Internal Libraries
 #include "AVMonoCamera.h"
+#include "nisyscfg.h"
+#include "NIDAQmx.h"
 
 /***
  __   ___  __   __        __
@@ -25,6 +27,8 @@ using namespace AVT::VmbAPI;
 VimbaSystem& AVCameraSystem = VimbaSystem::GetInstance();
 
 AVMonoCamera TestCamera;
+bool CAMERA_TEST = false;
+bool DAQ_TEST = true;
 
 int searchForCameras(VimbaSystem& cameraSystem, std::vector<std::string>& _outValue)
 {
@@ -57,23 +61,33 @@ int searchForCameras(VimbaSystem& cameraSystem, std::vector<std::string>& _outVa
 
 void main()
 {
-	std::vector<std::string> foundCameras;
+	if (CAMERA_TEST) {
+		std::vector<std::string> foundCameras;
+		// startup the transport layer
+		AVCameraSystem.Startup();
+		searchForCameras(AVCameraSystem, foundCameras);
+		std::cout << "Using ID " << foundCameras[0] << " as TestCamera!" << std::endl;
+		AVMonoCamera TestCamera = AVMonoCamera(foundCameras[0], AVCameraSystem);
+		// setup worker thread using the streamWorker function
+		std::thread TestWorkerThread([&] { TestCamera.streamWorker();  });
+		std::cout << "Thread launched. Main thread sleeping." << std::endl;
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+		std::cout << "Finished Sleeping" << std::endl;
+		// Stop streaming
+		TestCamera.isStreaming = false;
+		TestCamera.streamStopCV.notify_all();
+		std::cout << "Attempted to set condition variable, waiting for thread to join" << std::endl;
+		TestWorkerThread.join();
+		AVCameraSystem.Shutdown();
+		return;
+	}
 	
-	// startup the transport layer
-	AVCameraSystem.Startup();
-	searchForCameras(AVCameraSystem, foundCameras);
-	std::cout << "Using ID " << foundCameras[0] << " as TestCamera!" << std::endl;
-	AVMonoCamera TestCamera = AVMonoCamera(foundCameras[0], AVCameraSystem);
-	// setup worker thread using the streamWorker function
-	std::thread TestWorkerThread([&] { TestCamera.streamWorker();  });
-	std::cout << "Thread launched. Main thread sleeping." << std::endl;
-	std::this_thread::sleep_for(std::chrono::seconds(1));
-	std::cout << "Finished Sleeping" << std::endl;
-	// Stop streaming
-	TestCamera.isStreaming = false;
-	TestCamera.streamStopCV.notify_all();
-	std::cout << "Attempted to set condition variable, waiting for thread to join" << std::endl;
-	TestWorkerThread.join();
-	AVCameraSystem.Shutdown();
-	return;
+	if (DAQ_TEST)
+	{
+		
+		TaskHandle _daqitydaq;
+		DAQmxCreateTask("ClockSignal", &_daqitydaq);
+		// prototyping for DAQ connection
+		std::cout << "Created test task ClockSignal" << std::endl;
+	}
 }
