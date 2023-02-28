@@ -33,6 +33,7 @@ public:
 	void ConfigureClock(float _frequency, float _duty = 0.50);
 	void StartClock();
 	void StopClock();
+	bool stopTheClock;
 
 	// These parameters are for configuring the
 	// 'counter' output channel. This counter output
@@ -49,7 +50,6 @@ public:
 	uInt64 BufferSize = 250;
 	// Utilities
 	std::string LookupDAQError(int32 _errorCode);
-	bool stopTheClock;
 
 private:
 	// Synch primitives for the trigger signal task

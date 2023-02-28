@@ -51,9 +51,10 @@ void DAQ::ConfigureClock(float _frequency, float _duty = 0.50)
 	}
 	// If no error, continue with internal timing configuration
 	auto _timingErr = DAQmxCfgImplicitTiming(
-		DAQ::ClockTask,
-		DAQ::SampleMode,
-		DAQ::BufferSize);
+		DAQ::ClockTask,				// TaskHandle
+		DAQ::SampleMode,			// Sampling Mode 
+		DAQ::BufferSize);			// Buffer Size or # of Samples
+
 	// Error Check for Timing Config
 	if (_timingErr != 0)
 	{
@@ -85,12 +86,25 @@ void DAQ::StartClock()
 	std::cout << "Waiting for CV DAQ::_ClockSynch!" << std::endl;
 	DAQ::_ClockSynch.wait(_clockLock,
 		[&] { return DAQ::stopTheClock == true;});
+	std::cout << "Recieved request to stop trigger signal!" <<
+		std::endl;
+	DAQ::stopTheClock = false;	// reset signal
+	auto _stopTaskErr = DAQmxStopTask(DAQ::ClockTask);
+	if (_stopTaskErr != 0)
+	{
+		std::cout << "Something went wrong trying to stop the trigger!" <<
+			std::endl << "DAQ Reported \"" << DAQ::LookupDAQError(_stopTaskErr) <<
+			"\"." << std::endl;
+	}
 }
 
 void DAQ::StopClock()
 {
 	// TODO: Trigger condition variable to shutdown
 	//       the clock task.
+	DAQ::stopTheClock = true;
+	DAQ::_ClockSynch.notify_one();
+	return;
 }
 
 // Takes the cryptic error code and returns a slightly less cryptic 
