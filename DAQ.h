@@ -24,10 +24,10 @@ public:
 	~DAQ();
 
 	// Handles to various DAQ 'Tasks' 
-	TaskHandle ClockTask;			// Sets triggering signal for cameras
-									// and DAQ internal sample clock syncs
-									// to this task.
-	
+	TaskHandle ActualClockTask;
+	TaskHandle ClockTask; // Sets triggering signal for cameras
+												// and DAQ internal sample clock syncs
+												// to this task.
 	// Functions to setup the trigger signal for the camera
 	// systems and DAQ samples.
 	void ConfigureClock(float _frequency, float _duty = 0.50);

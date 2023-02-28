@@ -26,21 +26,27 @@ DAQ::~DAQ()
 // Counter 0 - 'ctr0' - PFI 12 / P2.4
 // Counter 1 - 'ctr1' - PFI 11 / P2.3
 // Frequency - ?????  - PFI 14 / P2.6
-void DAQ::ConfigureClock(float _frequency, float _duty = 0.50)
+void DAQ::ConfigureClock(float _frequency, float _duty)
 {
 	// Assign input parameters to object properties.
 	DAQ::Frequency = _frequency;
 	DAQ::DutyCycle = _duty;
+	auto _createRet = DAQmxCreateTask("TriggerSignal", &ClockTask);
+	if (_createRet != 0)
+	{
+	std::cout << "Creation: " 
+		<< DAQ::LookupDAQError(_createRet) << std::endl;
+	}
 	// DAQmx Create COunter Pulse Channel, Frequency
 	auto _ChanErr = DAQmxCreateCOPulseChanFreq(
-		DAQ::ClockTask,				// TaskHandle
-		DAQ::OutputPort.c_str(),	// Port in DevX/ctrY format
-		"",							// alternative label
-		DAQ::ClockUnits,			// units, Hertz
-		DAQ::IdleState,				// state of the line when not running
-		DAQ::InitialDelay,			// initial delay in seconds
-		DAQ::Frequency,				// frequency in hertz
-		DAQ::DutyCycle);			// duty cycle as fraction
+		DAQ::ClockTask,	
+		DAQ::OutputPort.c_str(),
+		"",
+		DAQ::ClockUnits,
+		DAQ::IdleState,
+		DAQ::InitialDelay,
+		DAQ::Frequency,
+		DAQ::DutyCycle);			
 	// Error Check for Channel Config
 	if (_ChanErr != 0)
 	{
@@ -48,6 +54,7 @@ void DAQ::ConfigureClock(float _frequency, float _duty = 0.50)
 		std::cout << "There was an issue configuring the trigger clock!"
 			<< std::endl << "DAQ Reports that \"" << 
 			DAQ::LookupDAQError(_ChanErr) << "\"." << std::endl;
+		return;
 	}
 	// If no error, continue with internal timing configuration
 	auto _timingErr = DAQmxCfgImplicitTiming(
@@ -109,7 +116,7 @@ void DAQ::StopClock()
 
 // Takes the cryptic error code and returns a slightly less cryptic 
 // error message from the National Instruments DAQmx library.
-std::string LookupDAQError(int32 _errorCode)
+std::string DAQ::LookupDAQError(int32 _errorCode)
 {
 	// get the required buffer size
 	// pass NULL and 0 to get function to tell you needed buffer size

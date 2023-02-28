@@ -11,7 +11,7 @@
 
 // Internal Libraries
 #include "AVMonoCamera.h"
-
+#include "DAQ.h"
 // National Instruments DAQmx Libraries
 #include "nisyscfg.h"
 #include "NIDAQmx.h"
@@ -86,5 +86,23 @@ void main()
 		return;
 	}
 	
+	if (DAQ_TEST) {
+		DAQ TestDAQ;
+		std::cout << "Attempting to configure trigger signal." << std::endl;
+		// Set the output port
+		TestDAQ.OutputPort = "Dev1/ctr0";
+		TestDAQ.ConfigureClock(80.0f, 0.5f);
+		std::cout << "Attempting to start the signal." << std::endl;
+		std::thread ClockTestTask([&] {
+			TestDAQ.StartClock();
+		});
+		std::cout << "Sleeping for ten seconds" << std::endl;
+		std::this_thread::sleep_for(std::chrono::seconds(10));
+		std::cout << "Sleep over. Stopping signal." << std::endl;
+		TestDAQ.StopClock();
+		std::cout << "Waiting for ClockTestTask thread to terminate." << std::endl;
+		ClockTestTask.join();
+		std::cout << "Test Done." << std::endl;
+	}
 	
 }
