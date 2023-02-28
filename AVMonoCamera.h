@@ -5,6 +5,17 @@
 #include "AVFrameObserver.h"
 #include <mutex>
 #include <condition_variable>
+
+/*
+	AVMonoCamera
+	Thomas Ales | Iowa State Univ.
+	Feb 2023
+	---
+	Object that represents an Allied Vision Aluvium
+	camera that is connected to the system. Unique by
+	CameraID.
+*/
+
 using namespace AVT::VmbAPI;
 using namespace AVT;
 
