@@ -10,6 +10,8 @@
 DAQ::DAQ()
 {
 	// Constructor.
+	DAQ::stopTheClock = false;
+
 }
 
 DAQ::~DAQ()
@@ -21,10 +23,9 @@ DAQ::~DAQ()
 // counter pin. Supply the frequency in Hertz and the duty cycle
 // of the waveform as a fraction of 1.0
 // For the 6126, the default output pins are:
-// Counter 0 - 'ctr0' - PFI 12
-// Counter 1 - 'ctr1' - PFI 11
-// Frequency - ?????  - PFI 14
-
+// Counter 0 - 'ctr0' - PFI 12 / P2.4
+// Counter 1 - 'ctr1' - PFI 11 / P2.3
+// Frequency - ?????  - PFI 14 / P2.6
 void DAQ::ConfigureClock(float _frequency, float _duty = 0.50)
 {
 	// Assign input parameters to object properties.
@@ -67,6 +68,23 @@ void DAQ::StartClock()
 {
 	// TODO: Write function to spawn thread and wait
 	//       for condition variable to stop the clock
+	
+	// Take the lock and start the clock signal
+	std::cout << "Taking DAQ::_ClockMutex and Locking!!" << std::endl;
+	std::unique_lock _clockLock(DAQ::_ClockMutex);
+	auto _taskErr = DAQmxStartTask(DAQ::ClockTask);
+	if (_taskErr != 0)
+	{
+		std::cout << "An error occurred starting the trigger signal!" <<
+			std::endl << "DAQ Error is \"" << DAQ::LookupDAQError(_taskErr)
+			<< "\"." << std::endl;
+	}
+	// Wait for the condition variable to trip
+	// Need to pass the local environment into the lambda
+	// so it can see if the stopTheStream flag has been tripped yet
+	std::cout << "Waiting for CV DAQ::_ClockSynch!" << std::endl;
+	DAQ::_ClockSynch.wait(_clockLock,
+		[&] { return DAQ::stopTheClock == true;});
 }
 
 void DAQ::StopClock()

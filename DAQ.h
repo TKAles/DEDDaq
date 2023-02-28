@@ -47,8 +47,14 @@ public:
 	// that need to be set in order to use the counter.
 	int32 SampleMode = DAQmx_Val_ContSamps;
 	uInt64 BufferSize = 250;
-
 	// Utilities
 	std::string LookupDAQError(int32 _errorCode);
+	bool stopTheClock;
+
+private:
+	// Synch primitives for the trigger signal task
+	std::mutex _ClockMutex;
+	std::condition_variable _ClockSynch;
+
 };
 
