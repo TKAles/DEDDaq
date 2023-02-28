@@ -11,6 +11,16 @@
 #include "VimbaCPP/Include/SharedPointerDefines.h"
 #include "AVCameraConfiguration.h"
 
+/*
+    AVMonoCamera
+    Thomas Ales | Iowa State Univ.
+    Feb 2023
+    ---
+    Object that represents an Allied Vision Aluvium 
+    camera that is connected to the system. Unique by
+    CameraID.
+*/
+
 using namespace AVT;
 using namespace AVT::VmbAPI;
 

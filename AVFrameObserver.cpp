@@ -3,10 +3,20 @@
 #include "VimbaCPP/Include/Frame.h"
 #include "VimbaCPP/Include/IFrameObserver.h"
 #include <iostream>
-
+/*
+	AVFrameObserver
+	Thomas Ales | Iowa State Univ.
+	Feb 2023
+	---
+	Implementation of the Allied Vision IFrameObserver
+	with a secondary internal queue for frames to be offloaded
+	from the camera to.
+*/
 // Constructor is defined in the header file.
+
 using namespace AVT;
 using namespace AVT::VmbAPI;
+
 // FrameRecieved. Callback function run whenever the associated 
 // camera sends a new frame. Needs to re-queue the frame back to
 // the camera once copying is completed.
