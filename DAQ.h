@@ -22,8 +22,11 @@ class DAQ
 public:
 	DAQ();
 	~DAQ();
-	
-	TaskHandle ClockTask;
+
+	// Handles to various DAQ 'Tasks' 
+	TaskHandle ClockTask;			// Sets triggering signal for cameras
+									// and DAQ internal sample clock syncs
+									// to this task.
 	
 	// Functions to setup the trigger signal for the camera
 	// systems and DAQ samples.
