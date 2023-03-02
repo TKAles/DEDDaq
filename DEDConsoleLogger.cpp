@@ -32,7 +32,7 @@ VimbaSystem& AVCameraSystem = VimbaSystem::GetInstance();
 
 AVMonoCamera TestCamera;
 bool CAMERA_TEST = false;
-bool DAQ_TEST = true;
+bool DAQ_TEST = false;
 
 int searchForCameras(VimbaSystem& cameraSystem, std::vector<std::string>& _outValue)
 {
@@ -90,8 +90,8 @@ void main()
 		DAQ TestDAQ;
 		std::cout << "Attempting to configure trigger signal." << std::endl;
 		// Set the output port
-		TestDAQ.OutputPort = "Dev1/ctr0";
-		TestDAQ.ConfigureClock(80.0f, 0.5f);
+		TestDAQ.OutputPort = "Dev1/ao1";
+		TestDAQ.ConfigureClock(80.0f, "Dev1/ao1");
 		std::cout << "Attempting to start the signal." << std::endl;
 		std::thread ClockTestTask([&] {
 			TestDAQ.StartClock();

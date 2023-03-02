@@ -11,7 +11,12 @@ DAQ::DAQ()
 {
 	// Constructor.
 	DAQ::stopTheClock = false;
-
+	auto _err = DAQmxCreateTask("Main Clock", &ClockTask);
+	if (_err != 0)
+	{
+		std::cout << "Something went wrong making the task!" << std::endl <<
+			"DAQ Says: " << DAQ::LookupDAQError(_err) << "." << std::endl;
+	}
 }
 
 DAQ::~DAQ()
@@ -20,55 +25,29 @@ DAQ::~DAQ()
 }
 
 // ConfigureClock is a convenience function to set the DAQmx
-// counter pin. Supply the frequency in Hertz and the duty cycle
-// of the waveform as a fraction of 1.0
-// For the 6126, the default output pins are:
-// Counter 0 - 'ctr0' - PFI 12 / P2.4
-// Counter 1 - 'ctr1' - PFI 11 / P2.3
-// Frequency - ?????  - PFI 14 / P2.6
-void DAQ::ConfigureClock(float _frequency, float _duty)
+// up as a trigger source for the system.
+// It will emit a 5V, 50% duty pulse train at the given
+// frequency in Hz. ConfigureClock must be called successfully
+// before StartClock is called, or else StartClock will hang.
+void DAQ::ConfigureClock(float _frequency, std::string _outputPort)
 {
-	// Assign input parameters to object properties.
-	DAQ::Frequency = _frequency;
-	DAQ::DutyCycle = _duty;
-	auto _createRet = DAQmxCreateTask("TriggerSignal", &ClockTask);
-	if (_createRet != 0)
-	{
-	std::cout << "Creation: " 
-		<< DAQ::LookupDAQError(_createRet) << std::endl;
-	}
-	// DAQmx Create COunter Pulse Channel, Frequency
-	auto _ChanErr = DAQmxCreateCOPulseChanFreq(
-		DAQ::ClockTask,	
-		DAQ::OutputPort.c_str(),
+	std::cout << "output port = " << DAQ::OutputPort << std::endl;
+	DutyCycle = 0.50f;
+	Frequency = _frequency;
+	OutputPort = _outputPort;
+	auto _err = DAQmxCreateAOFuncGenChan(
+		DAQ::ClockTask,
+		OutputPort.c_str(),
 		"",
-		DAQ::ClockUnits,
-		DAQ::IdleState,
-		DAQ::InitialDelay,
-		DAQ::Frequency,
-		DAQ::DutyCycle);			
-	// Error Check for Channel Config
-	if (_ChanErr != 0)
+		DAQmx_Val_Sine,
+		Frequency,
+		5.0f,
+		2.5f);
+	if (_err != 0)
 	{
-		// Look up the NI error and print the string to stdout.
-		std::cout << "There was an issue configuring the trigger clock!"
-			<< std::endl << "DAQ Reports that \"" << 
-			DAQ::LookupDAQError(_ChanErr) << "\"." << std::endl;
-		return;
-	}
-	// If no error, continue with internal timing configuration
-	auto _timingErr = DAQmxCfgImplicitTiming(
-		DAQ::ClockTask,				// TaskHandle
-		DAQ::SampleMode,			// Sampling Mode 
-		DAQ::BufferSize);			// Buffer Size or # of Samples
-
-	// Error Check for Timing Config
-	if (_timingErr != 0)
-	{
-		// Same deal as 46-9
-		std::cout << "There was an issue configuring the trigger clock!"
-			<< std::endl << "DAQ Reports that \"" <<
-			DAQ::LookupDAQError(_timingErr) << "\"." << std::endl;
+		std::cout << "Something went wrong trying to configure " <<
+			"the AnalogOutput channel!" << std::endl <<
+			"DAQ Says: " << DAQ::LookupDAQError(_err) << "." << std::endl;
 	}
 }
 
