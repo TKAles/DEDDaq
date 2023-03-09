@@ -188,6 +188,7 @@ void AVMonoCamera::streamWorker()
     // Set the streaming flag to true. Acquire the streaming lock.
     AVMonoCamera::isStreaming = true;
     std::unique_lock streamLock(AVMonoCamera::streamMutex);
+    
     // Open the camera with full access, configure it and enter streaming mode 
     // until requested to stop. Need to pass in the class via reference so it 
     // can see the isStreaming flag.
@@ -195,6 +196,7 @@ void AVMonoCamera::streamWorker()
     {
         std::cout << "Something went wrong getting camera access for the stream worker!" << std::endl;
     }
+   
     // Configure the camera for the experiment. Modify the associated struct
     // if the defaults don't work for your particular application.
     AVMonoCamera::applyFeatureChange();
@@ -204,6 +206,7 @@ void AVMonoCamera::streamWorker()
     AVMonoCamera::monoCameraPtr->GetFeatureByName("PayloadSize",
         AVMonoCamera::cameraFeaturePtr);
     AVMonoCamera::cameraFeaturePtr->GetValue(AVMonoCamera::cameraPayloadSize);
+    
     // Allocate memory for the frames
     std::cout << "WORKER: Allocating memory for frames." << std::endl;
     for (FramePtrVector::iterator fIter = AVMonoCamera::cameraFrameBufferVector.begin();
@@ -211,9 +214,10 @@ void AVMonoCamera::streamWorker()
     {
         (*fIter).reset(new Frame(AVMonoCamera::cameraPayloadSize));
         (*fIter)->RegisterObserver(IFrameObserverPtr(
-            new AVFrameObserver(AVMonoCamera::monoCameraPtr)));
+            new AVFrameObserver(AVMonoCamera::monoCameraPtr, AVMonoCamera::ImageQueue)));
         AVMonoCamera::monoCameraPtr->AnnounceFrame(*fIter);
     }
+
     // Start capture engine and put the allocated frames 
     // into the queue.
     std::cout << "WORKER: Starting Vimba API and announcing allocated frames." << std::endl;
@@ -231,8 +235,8 @@ void AVMonoCamera::streamWorker()
     // Wait for the condition variable to get triggered.
     AVMonoCamera::streamStopCV.wait(streamLock, [&] 
     { return AVMonoCamera::isStreaming == false; });
-
     std::cout << "Request to shutdown stream recieved." << std::endl;
+    
     // Tear down the API and release the memory used for the frames
     AVMonoCamera::monoCameraPtr->GetFeatureByName("AcquisitionStop",
         AVMonoCamera::cameraFeaturePtr);

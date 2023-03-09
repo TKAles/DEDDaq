@@ -24,12 +24,12 @@ Visual Studio 2022 | C++20 Specification
 ***/
 
 using namespace AVT::VmbAPI;
-
+using namespace std::chrono_literals;
 VimbaSystem& AVCameraSystem = VimbaSystem::GetInstance();
 
 AVMonoCamera TestCamera;
-bool CAMERA_TEST = false;
-bool DAQ_TEST = true;
+bool CAMERA_TEST = true;
+bool DAQ_TEST = false;
 
 int searchForCameras(VimbaSystem& cameraSystem, std::vector<std::string>& _outValue)
 {
@@ -71,14 +71,30 @@ void main()
 		AVMonoCamera TestCamera = AVMonoCamera(foundCameras[0], AVCameraSystem);
 		// setup worker thread using the streamWorker function
 		std::thread TestWorkerThread([&] { TestCamera.streamWorker();  });
+		// setup thread to check the size of the queue in the testcamera object
+		// this is to verify that the frames are being properly exported from
+		// the avframeobserver object
+		bool checkVectors = true;
+		std::thread VectorCheckerThread([&] {
+			while (checkVectors == true)
+			{
+				std::cout << "TestCamera.capturedFrameVector size is " <<
+					TestCamera.ImageQueue.size() << " elements." << std::endl;
+				std::this_thread::sleep_for(750ms);
+			}
+		});
 		std::cout << "Thread launched. Main thread sleeping." << std::endl;
-		std::this_thread::sleep_for(std::chrono::seconds(1));
+		std::this_thread::sleep_for(10s);
 		std::cout << "Finished Sleeping" << std::endl;
 		// Stop streaming
+		std::cout << "There are " << TestCamera.ImageQueue.size() <<
+			" frames in the queue that were exported from the Camera to main()" << std::endl;
 		TestCamera.isStreaming = false;
+		checkVectors = false;
 		TestCamera.streamStopCV.notify_all();
 		std::cout << "Attempted to set condition variable, waiting for thread to join" << std::endl;
 		TestWorkerThread.join();
+		VectorCheckerThread.join();
 		AVCameraSystem.Shutdown();
 		return;
 	}
