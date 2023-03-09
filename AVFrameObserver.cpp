@@ -5,8 +5,17 @@
 #include "VimbaImageTransform/Include/VmbTransform.h"
 #include <vector>
 #include <iostream>
-
+/*
+	AVFrameObserver
+	Thomas Ales | Iowa State Univ.
+	Feb 2023
+	---
+	Implementation of the Allied Vision IFrameObserver
+	with a secondary internal queue for frames to be offloaded
+	from the camera to.
+*/
 // Constructor is defined in the header file.
+
 using namespace AVT;
 using namespace AVT::VmbAPI;
 

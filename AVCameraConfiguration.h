@@ -3,13 +3,17 @@
 #include <string>
 #include <variant>
 
-// Custom datatype for the allied vision camera
-// configuration settings because I need to pass the
-// name of the feature as a string to the camera's feature pointer
-// and can't come up with a cleverer way.
+/*
+	AVCameraConfiguration
+	Thomas Ales | Iowa State Univ.
+	Feb 2023
+	---
 
-// Constructor contains defaults that usually just need to be tweaked
-// on a per experiment basis.
+	Custom Datatype used to hold settings to configure the 
+	Allied Vision monochrome cameras for various experiments.
+	Set the TriggerMode to Off to enable free-run at a given exposure
+	value.
+*/
 class AVCameraConfiguration
 {
 	public:
