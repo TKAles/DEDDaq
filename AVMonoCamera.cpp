@@ -224,7 +224,8 @@ void AVMonoCamera::streamWorker()
     {
         (*fIter).reset(new Frame(AVMonoCamera::cameraPayloadSize));
         (*fIter)->RegisterObserver(IFrameObserverPtr(
-            new AVFrameObserver(AVMonoCamera::monoCameraPtr, AVMonoCamera::ImageQueue)));
+            new AVFrameObserver(AVMonoCamera::monoCameraPtr, AVMonoCamera::ImageQueue,
+                AVMonoCamera::streamQueueMutex)));
         AVMonoCamera::monoCameraPtr->AnnounceFrame(*fIter);
     }
 

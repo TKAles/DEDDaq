@@ -44,6 +44,7 @@ public:
 	void streamWorker();
 
 	AVCameraConfiguration associatedConfig;
+	std::mutex streamQueueMutex;
 	std::queue<std::vector<VmbUchar_t>> ImageQueue;
 };
 
