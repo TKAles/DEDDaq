@@ -18,12 +18,15 @@ using namespace AVT::VmbAPI;
 class AVFrameObserver : public IFrameObserver
 {
 	std::queue<std::vector<VmbUchar_t>>& _outputQueue;
+	std::queue<std::tuple<VmbUint64_t, VmbUint64_t, VmbUint32_t, VmbUint32_t>>& _metadataQueue;
 	std::mutex& _queueMutex;
 
 public:
 	AVFrameObserver(CameraPtr pCamera, std::queue<std::vector<VmbUchar_t>>& _imgQueue,
-					std::mutex& _qMut)
-		: IFrameObserver(pCamera), _outputQueue(_imgQueue), _queueMutex(_qMut) {};
+					std::mutex& _qMut, std::queue<std::tuple<
+					VmbUint64_t, VmbUint64_t, VmbUint32_t, VmbUint32_t>>& _MetaQueue)
+		: IFrameObserver(pCamera), _outputQueue(_imgQueue), _queueMutex(_qMut),
+			_metadataQueue(_MetaQueue) {};
 
 	void FrameReceived(const FramePtr pFrame);
 };

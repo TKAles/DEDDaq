@@ -86,6 +86,7 @@ void main()
 				std::this_thread::sleep_for(750ms);
 			}
 		});
+		// Setup frame consumer object
 		std::cout << "Thread launched. Main thread sleeping." << std::endl;
 		std::this_thread::sleep_for(10s);
 		std::cout << "Finished Sleeping" << std::endl;

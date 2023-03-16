@@ -193,6 +193,7 @@ int AVMonoCamera::applyFeatureChange()
     // return zero on successfully applying the struct
     return 0;
 }
+
 void AVMonoCamera::streamWorker()
 {
     // Set the streaming flag to true. Acquire the streaming lock.
@@ -222,27 +223,27 @@ void AVMonoCamera::streamWorker()
     for (FramePtrVector::iterator fIter = AVMonoCamera::cameraFrameBufferVector.begin();
         fIter != AVMonoCamera::cameraFrameBufferVector.end(); fIter++)
     {
-        (*fIter).reset(new Frame(AVMonoCamera::cameraPayloadSize));
+        (*fIter).reset(new Frame(this->cameraPayloadSize));
         (*fIter)->RegisterObserver(IFrameObserverPtr(
-            new AVFrameObserver(AVMonoCamera::monoCameraPtr, AVMonoCamera::ImageQueue,
-                AVMonoCamera::streamQueueMutex)));
-        AVMonoCamera::monoCameraPtr->AnnounceFrame(*fIter);
+            new AVFrameObserver(this->monoCameraPtr, this->ImageQueue,
+                this->streamQueueMutex, this->MetadataQueue)));
+        this->monoCameraPtr->AnnounceFrame(*fIter);
     }
 
     // Start capture engine and put the allocated frames 
     // into the queue.
     std::cout << "WORKER: Starting Vimba API and announcing allocated frames." << std::endl;
-    AVMonoCamera::monoCameraPtr->StartCapture();
-    for (FramePtrVector::iterator fIter = AVMonoCamera::cameraFrameBufferVector.begin();
-        fIter != AVMonoCamera::cameraFrameBufferVector.end(); fIter++)
+    this->monoCameraPtr->StartCapture();
+    for (FramePtrVector::iterator fIter = this->cameraFrameBufferVector.begin();
+        fIter != this->cameraFrameBufferVector.end(); fIter++)
     {
-        AVMonoCamera::monoCameraPtr->QueueFrame(*fIter);
+        this->monoCameraPtr->QueueFrame(*fIter);
     }
-    AVMonoCamera::monoCameraPtr->GetFeatureByName("AcquisitionStart",
-        AVMonoCamera::cameraFeaturePtr);
-    AVMonoCamera::cameraFeaturePtr->RunCommand();
+    this->monoCameraPtr->GetFeatureByName("AcquisitionStart",
+        this->cameraFeaturePtr);
+    this->cameraFeaturePtr->RunCommand();
     std::cout << "WORKER: AcquisitionStart command sent, waiting for quit flag." << std::endl;
-   
+    this->ImageConsumer.StartConsumer();
     // Wait for the condition variable to get triggered.
     AVMonoCamera::streamStopCV.wait(streamLock, [&] 
     { return AVMonoCamera::isStreaming == false; });
@@ -252,6 +253,7 @@ void AVMonoCamera::streamWorker()
     AVMonoCamera::monoCameraPtr->GetFeatureByName("AcquisitionStop",
         AVMonoCamera::cameraFeaturePtr);
     AVMonoCamera::cameraFeaturePtr->RunCommand();
+    this->ImageConsumer.StopConsumer();
     AVMonoCamera::monoCameraPtr->EndCapture();
     AVMonoCamera::monoCameraPtr->FlushQueue();
     AVMonoCamera::monoCameraPtr->RevokeAllFrames();

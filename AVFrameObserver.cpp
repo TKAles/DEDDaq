@@ -5,6 +5,7 @@
 #include "VimbaImageTransform/Include/VmbTransform.h"
 #include <vector>
 #include <iostream>
+#include <tuple>
 /*
 	AVFrameObserver
 	Thomas Ales | Iowa State Univ.
@@ -37,14 +38,25 @@ void AVFrameObserver::FrameReceived(const FramePtr pFrame)
 			VmbUint32_t imgsize;
 			pFrame->GetBufferSize(bufsize);
 			pFrame->GetImageSize(imgsize);
-			
+			VmbUint32_t imgH;
+			VmbUint32_t imgW;
+			VmbUint64_t frameID;
+			VmbUint64_t timestamp;
 			VmbUchar_t* imgBuf;
 			pFrame->GetImage(imgBuf);
+			pFrame->GetHeight(imgH);
+			pFrame->GetWidth(imgW);
+			pFrame->GetFrameID(frameID);
+			pFrame->GetTimestamp(timestamp);
+
 			std::vector<VmbUchar_t> newImgBuf;
+			auto _metadata = std::tuple<VmbUint64_t, VmbUint64_t, VmbUint32_t, VmbUint32_t>(
+				frameID, timestamp, imgH, imgW);
 			newImgBuf.reserve(imgsize);
 			newImgBuf.insert(newImgBuf.end(), &imgBuf[0], &imgBuf[imgsize]);
 			AVFrameObserver::_queueMutex.lock();
 			AVFrameObserver::_outputQueue.push(newImgBuf);
+			AVFrameObserver::_metadataQueue.push(_metadata);
 			AVFrameObserver::_queueMutex.unlock();
 		} else {
 			// Data is bad.

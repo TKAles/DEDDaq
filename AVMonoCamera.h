@@ -2,6 +2,7 @@
 #include "VimbaCPP/Include/VimbaCPP.h"
 #include "AVCameraConfiguration.h"
 #include "AVFrameObserver.h"
+#include "AVFrameConsumer.h"
 #include <mutex>
 #include <condition_variable>
 
@@ -46,5 +47,8 @@ public:
 	AVCameraConfiguration associatedConfig;
 	std::mutex streamQueueMutex;
 	std::queue<std::vector<VmbUchar_t>> ImageQueue;
+	std::queue<std::tuple<VmbUint64_t, VmbUint64_t, VmbUint32_t, VmbUint32_t>> MetadataQueue;
+	AVFrameConsumer ImageConsumer = AVFrameConsumer(ImageQueue, streamQueueMutex, MetadataQueue);
+	
 };
 
