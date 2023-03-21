@@ -29,11 +29,12 @@ AVMonoCamera::AVMonoCamera()
     AVMonoCamera::isStreaming = false;
 }
 
-AVMonoCamera::AVMonoCamera(std::string _camID, VimbaSystem& _cSys)
+AVMonoCamera::AVMonoCamera(std::string _camID, VimbaSystem& _cSys, std::string _outPrefix)
 {
-    AVMonoCamera::cameraID = _camID;
-    AVMonoCamera::isStreaming = false;
-    if (VmbErrorSuccess != _cSys.GetCameraByID(AVMonoCamera::cameraID.c_str(), AVMonoCamera::monoCameraPtr))
+    this->cameraID = _camID;
+    this->isStreaming = false;
+    this->OutputFilename = this->cameraID + '-' + _outPrefix;
+    if (VmbErrorSuccess != _cSys.GetCameraByID(this->cameraID.c_str(), this->monoCameraPtr))
     {
         std::cout << "Something went wrong initializing an AVMonoCamera object for ID: " <<
             _camID << "!" << std::endl;
@@ -147,14 +148,15 @@ int AVMonoCamera::applyFeatureChange()
     for (auto featIter = AVMonoCamera::associatedConfig.featureName.begin();
         featIter != AVMonoCamera::associatedConfig.featureName.end(); featIter++)
     {
-        std::cout << "Attempting to apply FeatureName: " << featIter->c_str() << "\tFeatureValue: ";
         auto retcode = AVMonoCamera::monoCameraPtr->GetFeatureByName(
             featIter->c_str(), AVMonoCamera::cameraFeaturePtr);
         // If getting the feature is successful, determine the associated value type and
         // retrieve + apply it to the camera.
         if (retcode == VmbErrorSuccess)
         {
-            if (std::holds_alternative<std::string>(AVMonoCamera::associatedConfig.featureValue[idx]))
+            // String-specific condition
+            if (std::holds_alternative<std::string>(
+                AVMonoCamera::associatedConfig.featureValue[idx]))
             {
                 auto fVal = std::get<std::string>(AVMonoCamera::associatedConfig.featureValue[idx]).c_str();
                 std::cout << fVal << "." << std::endl;
@@ -165,24 +167,28 @@ int AVMonoCamera::applyFeatureChange()
                     std::cout << std::endl << "Setting the feature didn't work!" << std::endl;
                     return -2;
                 }
-            }
-            else if (std::holds_alternative<double>(AVMonoCamera::associatedConfig.featureValue[idx]))
+            } // Double-specific condition
+            else if (std::holds_alternative<double>(
+                     AVMonoCamera::associatedConfig.featureValue[idx]))
             {
-                auto fVal = std::get<double>(AVMonoCamera::associatedConfig.featureValue[idx]);
-                std::cout << fVal << "." << std::endl;
+                auto fVal = std::get<double>(
+                    AVMonoCamera::associatedConfig.featureValue[idx]);
                 if (VmbErrorSuccess != AVMonoCamera::cameraFeaturePtr->SetValue(fVal))
                 {
-                    std::cout << std::endl << "Setting the feature didn't work!" << std::endl;
+                    std::cout << std::endl << "Setting the feature didn't work!" << 
+                        std::endl;
                     return -2;
                 }
-            }
-            else if (std::holds_alternative<bool>(AVMonoCamera::associatedConfig.featureValue[idx]))
+            } // Bool-specific condition
+            else if (std::holds_alternative<bool>(
+                    AVMonoCamera::associatedConfig.featureValue[idx]))
             {
-                auto fVal = std::get<bool>(AVMonoCamera::associatedConfig.featureValue[idx]);
-                std::cout << fVal << "." << std::endl;
+                auto fVal = std::get<bool>(
+                    AVMonoCamera::associatedConfig.featureValue[idx]);
                 if (VmbErrorSuccess != AVMonoCamera::cameraFeaturePtr->SetValue(fVal))
                 {
-                    std::cout << std::endl << "Setting the feature didn't work!" << std::endl;
+                    std::cout << std::endl << "Setting the feature didn't work!" << 
+                        std::endl;
                     return -2;
                 }
             }
@@ -198,6 +204,8 @@ void AVMonoCamera::streamWorker()
 {
     // Set the streaming flag to true. Acquire the streaming lock.
     AVMonoCamera::isStreaming = true;
+
+    std::cout << "Capturefile is " << this->OutputFilename << std::endl;
     std::unique_lock streamLock(AVMonoCamera::streamMutex);
     
     // Open the camera with full access, configure it and enter streaming mode 
@@ -245,7 +253,7 @@ void AVMonoCamera::streamWorker()
     std::cout << "WORKER: AcquisitionStart command sent, waiting for quit flag." << std::endl;
     this->ImageConsumer.StartConsumer();
     // Wait for the condition variable to get triggered.
-    AVMonoCamera::streamStopCV.wait(streamLock, [&] 
+    AVMonoCamera::streamStopCV.wait(streamLock, [this] 
     { return AVMonoCamera::isStreaming == false; });
     std::cout << "Request to shutdown stream recieved." << std::endl;
     
