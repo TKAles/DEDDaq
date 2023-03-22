@@ -27,6 +27,9 @@
     <ClCompile Include="DAQ.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AVFrameConsumer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AVMonoCamera.h">
@@ -39,6 +42,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DAQ.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AVFrameConsumer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -100,7 +100,7 @@ void main()
 		auto captureFilename = RUN_PREFIX + '-' + foundCameras[0];
 		std::cout << "Using ID " << foundCameras[0] << " as TestCamera!" << std::endl;
 		AVMonoCamera TestCamera = AVMonoCamera(foundCameras[0], AVCameraSystem, RUN_PREFIX);
-		
+		TestCamera.ImageConsumer.amIListening = true;
 		// setup worker thread using the streamWorker function
 		std::thread TestWorkerThread([&TestCamera] { TestCamera.streamWorker(); });
 		std::thread TestConsumerThread([&TestCamera] {TestCamera.ImageConsumer.Consumer(); });
@@ -114,9 +114,12 @@ void main()
 		std::cout << "There are " << TestCamera.ImageQueue.size() <<
 			" frames in the queue that were exported from the Camera to main()" << std::endl;
 		TestCamera.isStreaming = false;
+		TestCamera.ImageConsumer.amIListening = false;
 		TestCamera.streamStopCV.notify_all();
 		std::cout << "Attempted to set condition variable, waiting for thread to join" << std::endl;
 		TestWorkerThread.join();
+		TestConsumerThread.join();
+		TestEncoderThread.join();
 		AVCameraSystem.Shutdown();
 		return;
 	}

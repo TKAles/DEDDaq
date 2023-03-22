@@ -203,8 +203,8 @@ int AVMonoCamera::applyFeatureChange()
 void AVMonoCamera::streamWorker()
 {
     // Set the streaming flag to true. Acquire the streaming lock.
-    AVMonoCamera::isStreaming = true;
-
+    this->isStreaming = true;
+    
     std::cout << "Capturefile is " << this->OutputFilename << std::endl;
     std::unique_lock streamLock(AVMonoCamera::streamMutex);
     
@@ -251,17 +251,16 @@ void AVMonoCamera::streamWorker()
         this->cameraFeaturePtr);
     this->cameraFeaturePtr->RunCommand();
     std::cout << "WORKER: AcquisitionStart command sent, waiting for quit flag." << std::endl;
-    this->ImageConsumer.StartConsumer();
     // Wait for the condition variable to get triggered.
-    AVMonoCamera::streamStopCV.wait(streamLock, [this] 
-    { return AVMonoCamera::isStreaming == false; });
+    this->streamStopCV.wait(streamLock, [this]
+    { return this->isStreaming == false; });
     std::cout << "Request to shutdown stream recieved." << std::endl;
     
     // Tear down the API and release the memory used for the frames
-    AVMonoCamera::monoCameraPtr->GetFeatureByName("AcquisitionStop",
-        AVMonoCamera::cameraFeaturePtr);
-    AVMonoCamera::cameraFeaturePtr->RunCommand();
-    this->ImageConsumer.StopConsumer();
+    this->monoCameraPtr->GetFeatureByName("AcquisitionStop",
+        this->cameraFeaturePtr);
+    this->cameraFeaturePtr->RunCommand();
+    
     AVMonoCamera::monoCameraPtr->EndCapture();
     AVMonoCamera::monoCameraPtr->FlushQueue();
     AVMonoCamera::monoCameraPtr->RevokeAllFrames();

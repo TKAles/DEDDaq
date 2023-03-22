@@ -48,20 +48,25 @@ void AVFrameConsumer::Encoder(std::string _captureFile)
 	bool writerIsInitialized = false;
 	std::cout << "ENCODER: Using " << _captureFile
 		<< " as  file name." << std::endl;
+	auto _fullfilepath = std::string("C:\\ded-test\\") + _captureFile + std::string(".avi");
 	while (this->amIListening == true)
 	{
 		if ((this->OpenCVMatQueue.empty() == false) &&
 			(this->OpenCVMetadata.empty() == false))
 		{
 			this->MatMutex.lock();	// grab mutex and frame + info
-			auto _unprocOCVFrame = this->OpenCVMatQueue.front();
+			auto _unprocOCVFrame = this->OpenCVMatQueue.front().clone();
 			auto _unprocMetadata = this->OpenCVMetadata.front();
+			int frameID = std::get<0>(_unprocMetadata);
+			int timestamp = std::get<1>(_unprocMetadata);
+			int imageH = std::get<2>(_unprocMetadata);
+			int imageW = std::get<3>(_unprocMetadata);
 			this->OpenCVMatQueue.pop();
 			this->OpenCVMetadata.pop();
 			this->MatMutex.unlock();
 			// Calculate the frame delta
-			_frameDelta = std::get<1>(_unprocMetadata) - _oldTimestampNano;
-			_oldTimestampNano = std::get<1>(_unprocMetadata);
+			_frameDelta = timestamp - _oldTimestampNano;
+			_oldTimestampNano = timestamp;
 			//                1             
 			// FPS = --------------------
 			//        Delta[ns] / (10^9)    
@@ -70,11 +75,11 @@ void AVFrameConsumer::Encoder(std::string _captureFile)
 			// need to wait until the first frame is recieved in order
 			//.to know the dimensions of the frame.
 			if (writerIsInitialized == false)
-			{/*
-				_cvVidWriter = cv::VideoWriter(_fullpath, cv::CAP_FFMPEG, 0, 0,
-					cv::Size((int)std::get<2>(_unprocMetadata),
-						(int)std::get<3>(_unprocMetadata)), false);
-			*/}
+			{
+				_cvVidWriter = cv::VideoWriter(_fullfilepath, cv::CAP_FFMPEG, this->codec, 60.0,
+					cv::Size(imageW,imageH), false);
+				writerIsInitialized = true;
+			}
 			else {
 				// code to write out the frame goes here....
 				_cvVidWriter.write(_unprocOCVFrame);
@@ -84,6 +89,35 @@ void AVFrameConsumer::Encoder(std::string _captureFile)
 			std::this_thread::sleep_for((this->EmptyQueueSleepTime));
 		}
 	}
+	std::cout << "There are " << this->OpenCVMatQueue.size() << " frames left!" << std::endl;
+	std::cout << "Queue empty property is " << this->OpenCVMatQueue.empty() << std::endl;
+	if (this->OpenCVMatQueue.empty() == false)
+	{
+		while (this->OpenCVMatQueue.empty() == false)
+		{
+			this->MatMutex.lock();
+			auto _unprocOCVFrame = this->OpenCVMatQueue.front().clone();
+			auto _unprocMetadata = this->OpenCVMetadata.front();
+			int frameID = std::get<0>(_unprocMetadata);
+			int timestamp = std::get<1>(_unprocMetadata);
+			int imageH = std::get<2>(_unprocMetadata);
+			int imageW = std::get<3>(_unprocMetadata);
+			this->OpenCVMatQueue.pop();
+			this->OpenCVMetadata.pop();
+			this->MatMutex.unlock();
+			// Calculate the frame delta
+			_frameDelta = timestamp - _oldTimestampNano;
+			_oldTimestampNano = timestamp;
+			//                1             
+			// FPS = --------------------
+			//        Delta[ns] / (10^9)    
+			_currentFPS = 1 / (_frameDelta / std::pow(10.0, 9.0));
+			_cvVidWriter.write(_unprocOCVFrame);
+			std::cout << "There are " << this->OpenCVMatQueue.size() << " frames left to encode!"
+				<< std::endl;
+		}
+	}
+	std::cout << "Encoding finished! Shutting down!" << std::endl;
 	// Shutdown the videowriter
 	if (writerIsInitialized == true)
 	{

@@ -28,6 +28,7 @@ class AVFrameConsumer
 		void Encoder(std::string _captureFile);
 		void StartConsumer();
 		void StopConsumer();
+		bool amIListening;
 		std::mutex MatMutex;
 		std::string OutputFilename;
 		std::string CaptureTime;
@@ -44,8 +45,7 @@ class AVFrameConsumer
 
 		// FourCC code for FFV1 lossless codec. Recompress using
 		// different codec afterwards for viewing ease.
-		int codec = cv::VideoWriter::fourcc('F', 'F', 'V', '1');
-		bool amIListening;
+		int codec = cv::VideoWriter::fourcc('F', 'M', 'P', '4');
 		std::thread consumerThread;
 		std::thread encoderThread;
 		unsigned int framesConsumed;
