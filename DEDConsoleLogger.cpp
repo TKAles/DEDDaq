@@ -31,8 +31,9 @@ using namespace std::chrono_literals;
 VimbaSystem& AVCameraSystem = VimbaSystem::GetInstance();
 
 AVMonoCamera TestCamera;
-bool CAMERA_TEST = true;
+bool CAMERA_TEST = false;
 bool DAQ_TEST = false;
+bool IR_TEST = true;
 std::string RUN_PREFIX;
 
 namespace misc
