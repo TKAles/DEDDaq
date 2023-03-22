@@ -22,14 +22,17 @@ class DAQ
 public:
 	DAQ();
 	~DAQ();
-	
-	TaskHandle ClockTask;
-	
+
+	// Handles to various DAQ 'Tasks' 
+	TaskHandle ClockTask; // Sets triggering signal for cameras
+												// and DAQ internal sample clock syncs
+												// to this task.
 	// Functions to setup the trigger signal for the camera
 	// systems and DAQ samples.
-	void ConfigureClock(float _frequency, float _duty = 0.50);
+	void ConfigureClock(float _frequency, std::string _outputPort);
 	void StartClock();
 	void StopClock();
+	bool stopTheClock;
 
 	// These parameters are for configuring the
 	// 'counter' output channel. This counter output
@@ -44,8 +47,13 @@ public:
 	// that need to be set in order to use the counter.
 	int32 SampleMode = DAQmx_Val_ContSamps;
 	uInt64 BufferSize = 250;
-
 	// Utilities
 	std::string LookupDAQError(int32 _errorCode);
+
+private:
+	// Synch primitives for the trigger signal task
+	std::mutex _ClockMutex;
+	std::condition_variable _ClockSynch;
+
 };
 

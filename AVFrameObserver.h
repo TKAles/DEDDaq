@@ -1,6 +1,7 @@
 #pragma once
 #include "VimbaCPP/Include/IFrameObserver.h"
 #include <mutex>
+#include <vector>
 #include <queue>
 /*
 	AVFrameObserver
@@ -16,11 +17,16 @@ using namespace AVT::VmbAPI;
 
 class AVFrameObserver : public IFrameObserver
 {
-public:
-	AVFrameObserver(CameraPtr pCamera) : IFrameObserver(pCamera) {};
-	void FrameReceived(const FramePtr pFrame);
-	void GetFrame(FramePtr& _outFrame);
-	std::mutex queueMutex;
-	std::queue<FramePtr> frameTransferQueue;
+	std::queue<std::vector<VmbUchar_t>>& _outputQueue;
+	std::queue<std::tuple<VmbUint64_t, VmbUint64_t, VmbUint32_t, VmbUint32_t>>& _metadataQueue;
+	std::mutex& _queueMutex;
 
+public:
+	AVFrameObserver(CameraPtr pCamera, std::queue<std::vector<VmbUchar_t>>& _imgQueue,
+					std::mutex& _qMut, std::queue<std::tuple<
+					VmbUint64_t, VmbUint64_t, VmbUint32_t, VmbUint32_t>>& _MetaQueue)
+		: IFrameObserver(pCamera), _outputQueue(_imgQueue), _queueMutex(_qMut),
+			_metadataQueue(_MetaQueue) {};
+
+	void FrameReceived(const FramePtr pFrame);
 };
