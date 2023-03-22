@@ -8,7 +8,7 @@
 #include "VimbaCPP/Include/VimbaCPP.h"
 #include "opencv2/core.hpp"
 #include "opencv2/highgui.hpp"
-
+#include "opencv2/imgproc.hpp"
 using namespace std::chrono_literals;
 
 class AVFrameConsumer
@@ -45,7 +45,7 @@ class AVFrameConsumer
 
 		// FourCC code for FFV1 lossless codec. Recompress using
 		// different codec afterwards for viewing ease.
-		int codec = cv::VideoWriter::fourcc('F', 'M', 'P', '4');
+		int codec = cv::VideoWriter::fourcc('F', 'F', 'V', '1');
 		std::thread consumerThread;
 		std::thread encoderThread;
 		unsigned int framesConsumed;
