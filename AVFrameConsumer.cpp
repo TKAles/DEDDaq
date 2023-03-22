@@ -58,7 +58,7 @@ void AVFrameConsumer::Encoder(std::string _captureFile)
 			auto _unprocOCVFrame = this->OpenCVMatQueue.front().clone();
 			auto _unprocMetadata = this->OpenCVMetadata.front();
 			int frameID = std::get<0>(_unprocMetadata);
-			int timestamp = std::get<1>(_unprocMetadata);
+			uint64 timestamp = std::get<1>(_unprocMetadata);
 			int imageH = std::get<2>(_unprocMetadata);
 			int imageW = std::get<3>(_unprocMetadata);
 			this->OpenCVMatQueue.pop();
@@ -81,6 +81,18 @@ void AVFrameConsumer::Encoder(std::string _captureFile)
 				writerIsInitialized = true;
 			}
 			else {
+				std::string _frameIDStr = std::string("FrameID: ") + std::to_string(frameID);
+				std::string _tsStr = std::string("Timestamp: ") + std::to_string(timestamp) + std::string("ns");
+				std::string _fpsStr = std::string("FPS: ") + std::to_string(_currentFPS) + std::string("fps");
+				cv::putText(_unprocOCVFrame, std::string(_frameIDStr),
+					cv::Point(20, 20), cv::FONT_HERSHEY_COMPLEX_SMALL, 1.0,
+					cv::Scalar(0));
+				cv::putText(_unprocOCVFrame, std::string(_tsStr),
+					cv::Point(20, 40), cv::FONT_HERSHEY_COMPLEX_SMALL, 1.0,
+					cv::Scalar(0));
+				cv::putText(_unprocOCVFrame, std::string(_fpsStr),
+					cv::Point(20, 60), cv::FONT_HERSHEY_COMPLEX_SMALL, 1.0,
+					cv::Scalar(0));
 				// code to write out the frame goes here....
 				_cvVidWriter.write(_unprocOCVFrame);
 			}
@@ -99,7 +111,7 @@ void AVFrameConsumer::Encoder(std::string _captureFile)
 			auto _unprocOCVFrame = this->OpenCVMatQueue.front().clone();
 			auto _unprocMetadata = this->OpenCVMetadata.front();
 			int frameID = std::get<0>(_unprocMetadata);
-			int timestamp = std::get<1>(_unprocMetadata);
+			uint64 timestamp = std::get<1>(_unprocMetadata);
 			int imageH = std::get<2>(_unprocMetadata);
 			int imageW = std::get<3>(_unprocMetadata);
 			this->OpenCVMatQueue.pop();
@@ -112,7 +124,19 @@ void AVFrameConsumer::Encoder(std::string _captureFile)
 			// FPS = --------------------
 			//        Delta[ns] / (10^9)    
 			_currentFPS = 1 / (_frameDelta / std::pow(10.0, 9.0));
-			_cvVidWriter.write(_unprocOCVFrame);
+			// burn in frame ID
+			std::string _frameIDStr = std::string("FrameID: ") + std::to_string(frameID);
+			std::string _tsStr = std::string("Timestamp: ") + std::to_string(timestamp) + std::string("ns");
+			std::string _fpsStr = std::string("FPS: ") + std::to_string(_currentFPS) + std::string("fps");
+			cv::putText(_unprocOCVFrame, std::string(_frameIDStr),
+				cv::Point(20, 20), cv::FONT_HERSHEY_COMPLEX_SMALL, 1.0,
+				cv::Scalar(0));
+			cv::putText(_unprocOCVFrame, std::string(_tsStr),
+				cv::Point(20, 40), cv::FONT_HERSHEY_COMPLEX_SMALL, 1.0,
+				cv::Scalar(0));
+			cv::putText(_unprocOCVFrame, std::string(_fpsStr),
+				cv::Point(20, 60), cv::FONT_HERSHEY_COMPLEX_SMALL, 1.0,
+				cv::Scalar(0)); _cvVidWriter.write(_unprocOCVFrame);
 			std::cout << "There are " << this->OpenCVMatQueue.size() << " frames left to encode!"
 				<< std::endl;
 		}
