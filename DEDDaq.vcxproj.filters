@@ -30,6 +30,12 @@
     <ClCompile Include="AVFrameConsumer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="IRCamera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CustomIRClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AVMonoCamera.h">
@@ -46,6 +52,12 @@
     </ClInclude>
     <ClInclude Include="AVFrameConsumer.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IRCamera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomIRClient.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

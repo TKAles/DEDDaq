@@ -10,8 +10,10 @@
     <ClCompile Include="AVFrameConsumer.cpp" />
     <ClCompile Include="AVFrameObserver.cpp" />
     <ClCompile Include="AVMonoCamera.cpp" />
+    <ClCompile Include="CustomIRClient.cpp" />
     <ClCompile Include="DAQ.cpp" />
     <ClCompile Include="DEDConsoleLogger.cpp" />
+    <ClCompile Include="IRCamera.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AVFrameConsumer.h" />
@@ -19,6 +21,8 @@
     <ClInclude Include="AVMonoCamera.h" />
     <ClInclude Include="AVCameraConfiguration.h" />
     <ClInclude Include="DAQ.h" />
+    <ClInclude Include="CustomIRClient.h" />
+    <ClInclude Include="IRCamera.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -31,7 +35,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -54,7 +58,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(VIMBA_HOME)\VimbaCPP\Lib\Win64;$(OPENCV_HOME)\build\x64\vc16\lib;$(EVOCORTEX_HOME)\sdk\x64;$(OPENCV_HOME)\build\bin</AdditionalLibraryDirectories>
-      <AdditionalDependencies>C:\Program Files (x86)\National Instruments\Shared\ExternalCompilerSupport\C\lib64\msvc\NIDAQmx.lib;C:\Program Files (x86)\National Instruments\Shared\ExternalCompilerSupport\C\lib64\msvc\nisyscfg.lib;$(VIMBA_HOME)\VimbaCPP\Lib\Win64\VimbaCPP.lib;$(OPENCV_HOME)\build\x64\vc16\lib\opencv_world470d.lib;$(EVOCORTEX_HOME)\sdk\x64\libirimagerd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>C:\Program Files (x86)\National Instruments\Shared\ExternalCompilerSupport\C\lib64\msvc\NIDAQmx.lib;C:\Program Files (x86)\National Instruments\Shared\ExternalCompilerSupport\C\lib64\msvc\nisyscfg.lib;$(VIMBA_HOME)\VimbaCPP\Lib\Win64\VimbaCPP.lib;$(OPENCV_HOME)\build\x64\vc16\lib\opencv_world470d.lib;$(EVOCORTEX_HOME)\sdk\x64\libirimager.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

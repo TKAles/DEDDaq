@@ -12,6 +12,8 @@
 // Internal Libraries
 #include "AVMonoCamera.h"
 #include "DAQ.h"
+#include "IRCamera.h"
+#include "CustomIRClient.h"
 // National Instruments DAQmx Libraries
 #include "nisyscfg.h"
 #include "NIDAQmx.h"
@@ -89,9 +91,34 @@ namespace misc
 
 };
 
+using namespace std::chrono_literals;
 
 void main()
 {
+	if (IR_TEST)
+	{
+		IRCam TestIR = IRCam();
+		CustomIRClient* IRCamCallback = new CustomIRClient();
+		TestIR.StartupIR();
+		TestIR.CameraDevice->setClient(IRCamCallback);
+		std::thread IRStreamThread([&TestIR] {
+		auto res = TestIR.CameraDevice->startStreaming();
+		if (res < 0)
+		{
+			std::cout << "FACK! Error starting IR stream!" << std::endl;
+		}
+		auto bufsize = TestIR.CameraDevice->getRawBufferSize();
+		unsigned char* bleh = new unsigned char[bufsize];
+		std::cout << "Buffer size is " << bufsize << std::endl;
+		for (auto idx = 0; idx < 10; idx++)
+		{
+			evo::IRDeviceError err = TestIR.CameraDevice->getFrame(bleh);
+		}
+		});
+		std::this_thread::sleep_for(250ms);
+		TestIR.CameraDevice->stopStreaming();
+		IRStreamThread.join();
+	}
 	if (CAMERA_TEST) {
 		std::vector<std::string> foundCameras;
 		// startup the transport layer
