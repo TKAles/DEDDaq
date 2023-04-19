@@ -2,7 +2,8 @@
 
 #include <QtWidgets/QMainWindow>
 #include "ui_GooeyDeadDaque.h"
-
+#include <iostream>
+#include <qmessagebox.h>
 class GooeyDeadDaque : public QMainWindow
 {
     Q_OBJECT
@@ -10,17 +11,17 @@ class GooeyDeadDaque : public QMainWindow
 public:
     GooeyDeadDaque(QWidget *parent = nullptr);
     ~GooeyDeadDaque();
-    void PointsToAcquireClick;
-    void AcquisitionFrequencyChanged;
-    void DetectClockClick;
-    void ClockSelectChanged;
+    void PointsToAcquireClick();
+    void AcquisitionFrequencyChanged();
+    void DetectClockClick();
+    void ClockSelectChanged();
 
-    void LookForMonocamsClick;
-    void SelectedMonocamChanged;
+    void LookForMonocamsClick();
+    void SelectedMonocamChanged();
 
-    void Xi400SerialChanged;
-    void Xi400ToggleClick;
-    void Xi400TempRangeChanged;
+    void Xi400SerialChanged();
+    void Xi400ToggleClick();
+    void Xi400TempRangeChanged();
 
 
 
